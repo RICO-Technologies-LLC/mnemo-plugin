@@ -73,7 +73,7 @@ escaped_path="$(echo "$MEM_FILE" | sed 's/\\/\\\\/g')"
 
 # First-session onboarding: detect zero memories
 if [[ "$count" == "0" ]]; then
-    printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo loaded 0 memories. This is a new installation. Help the user set up their Foundation memories by asking about: (1) Who they are — company/team name and purpose, (2) Key systems and tools they use, (3) Core values or principles that guide their work, (4) Important conventions or standards. Store each as a Foundation/Initialization memory with appropriate scopes. Use save-memory.sh for each one."}}'
+    printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Welcome to Mnemo. This is a fresh start — no memories yet. Help the user create their first Foundation memories through natural conversation. Ask them to tell you about themselves: who they are, what they build, what tools they use, and what matters to them. Listen, then save each piece as a Foundation/Initialization memory with an appropriate scope. Keep it conversational — not a checklist. Use save-memory.sh with --working-dir and --session-id for each one. When done, let them know they can always say remember this to save something new, or /mnemo:help for a quick reference."}}'
 else
     printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo loaded %s memories. Read them now: %s"}}' "$count" "$escaped_path"
 fi

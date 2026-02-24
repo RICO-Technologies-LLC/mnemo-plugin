@@ -313,9 +313,16 @@ else
 fi
 
 echo ""
-echo "=== Setup Complete ==="
+echo "=== You're all set ==="
 echo ""
-echo "Restart Claude Code to start using Mnemo."
+echo "Mnemo will remember your decisions, conventions, and context across every"
+echo "session. You don't need to do anything special — it works in the background."
+echo ""
+echo "Restart Claude Code to get started."
+echo ""
 if [[ "$MODE" == "register" ]]; then
-    echo "Your first session will guide you through setting up your initial memories."
+    echo "On your first session, Claude will help you create your initial memories."
+    echo "Just tell it about your team, your tools, and how you like to work."
+    echo ""
 fi
+echo "Anytime you need help, type: /mnemo:help"
