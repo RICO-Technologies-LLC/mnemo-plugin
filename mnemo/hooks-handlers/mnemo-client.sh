@@ -73,27 +73,27 @@ mnemo_load_config() {
         if command -v jq &>/dev/null; then
             local val
             val="$(echo "$content" | jq -r '.apiUrl // empty')"
-            [[ -z "$MNEMO_API_URL" && -n "$val" ]] && MNEMO_API_URL="$val"
+            [[ -z "$MNEMO_API_URL" && -n "$val" ]] && MNEMO_API_URL="$val" || true
             val="$(echo "$content" | jq -r '.authMethod // empty')"
-            [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val"
+            [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val" || true
             val="$(echo "$content" | jq -r '.apiKey // empty')"
-            [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val"
+            [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val" || true
             val="$(echo "$content" | jq -r '.username // empty')"
-            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val"
+            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val" || true
             val="$(echo "$content" | jq -r '.password // empty')"
-            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val"
+            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val" || true
         else
             local val
             val="$(_mnemo_parse_json_value "$content" "apiUrl")"
-            [[ -z "$MNEMO_API_URL" && -n "$val" ]] && MNEMO_API_URL="$val"
+            [[ -z "$MNEMO_API_URL" && -n "$val" ]] && MNEMO_API_URL="$val" || true
             val="$(_mnemo_parse_json_value "$content" "authMethod")"
-            [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val"
+            [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val" || true
             val="$(_mnemo_parse_json_value "$content" "apiKey")"
-            [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val"
+            [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val" || true
             val="$(_mnemo_parse_json_value "$content" "username")"
-            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val"
+            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val" || true
             val="$(_mnemo_parse_json_value "$content" "password")"
-            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val"
+            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val" || true
         fi
     fi
 
@@ -310,7 +310,7 @@ _mnemo_build_json() {
         shift 2
 
         # Skip empty values
-        [[ -z "$val" ]] && continue
+        [[ -z "$val" ]] && continue || true
 
         if [[ "$first" == "true" ]]; then
             first=false
@@ -369,16 +369,16 @@ mnemo_get_memories() {
     local tier="${4:-}" startup_mode="${5:-}"
 
     local query=""
-    [[ -n "$working_dir" ]] && query+="workingDirectory=$(_mnemo_urlencode "$working_dir")&"
-    [[ -n "$scope" ]] && query+="scope=${scope}&"
-    [[ -n "$project_id" ]] && query+="projectId=${project_id}&"
-    [[ -n "$tier" ]] && query+="tier=${tier}&"
-    [[ -n "$startup_mode" ]] && query+="startupMode=${startup_mode}&"
+    [[ -n "$working_dir" ]] && query+="workingDirectory=$(_mnemo_urlencode "$working_dir")&" || true
+    [[ -n "$scope" ]] && query+="scope=${scope}&" || true
+    [[ -n "$project_id" ]] && query+="projectId=${project_id}&" || true
+    [[ -n "$tier" ]] && query+="tier=${tier}&" || true
+    [[ -n "$startup_mode" ]] && query+="startupMode=${startup_mode}&" || true
 
     # Remove trailing &
     query="${query%&}"
     local path="/api/memories"
-    [[ -n "$query" ]] && path+="?${query}"
+    [[ -n "$query" ]] && path+="?${query}" || true
 
     _mnemo_request GET "$path"
 }
@@ -388,13 +388,13 @@ mnemo_get_startup_memories() {
     local working_dir="${1:-}" scope="${2:-}" project_id="${3:-}"
 
     local query=""
-    [[ -n "$working_dir" ]] && query+="workingDirectory=$(_mnemo_urlencode "$working_dir")&"
-    [[ -n "$scope" ]] && query+="scope=${scope}&"
-    [[ -n "$project_id" ]] && query+="projectId=${project_id}&"
+    [[ -n "$working_dir" ]] && query+="workingDirectory=$(_mnemo_urlencode "$working_dir")&" || true
+    [[ -n "$scope" ]] && query+="scope=${scope}&" || true
+    [[ -n "$project_id" ]] && query+="projectId=${project_id}&" || true
     query="${query%&}"
 
     local path="/api/memories/startup"
-    [[ -n "$query" ]] && path+="?${query}"
+    [[ -n "$query" ]] && path+="?${query}" || true
 
     _mnemo_request GET "$path"
 }
@@ -413,8 +413,8 @@ mnemo_search_memories() {
     encoded_q="$(printf '%s' "$keywords" | sed 's/ /%20/g; s/&/%26/g; s/=/%3D/g; s/?/%3F/g; s/#/%23/g')"
 
     local query="q=${encoded_q}"
-    [[ -n "$scope" ]] && query+="&scope=${scope}"
-    [[ -n "$project_id" ]] && query+="&projectId=${project_id}"
+    [[ -n "$scope" ]] && query+="&scope=${scope}" || true
+    [[ -n "$project_id" ]] && query+="&projectId=${project_id}" || true
 
     _mnemo_request GET "/api/memories/search?${query}"
 }
