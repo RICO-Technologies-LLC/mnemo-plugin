@@ -11,16 +11,10 @@ set -euo pipefail
 
 MNEMO_API_URL="${MNEMO_API_URL:-}"
 MNEMO_API_KEY="${MNEMO_API_KEY:-}"
-MNEMO_USERNAME="${MNEMO_USERNAME:-}"
-MNEMO_PASSWORD="${MNEMO_PASSWORD:-}"
 MNEMO_AUTH_METHOD="${MNEMO_AUTH_METHOD:-}"
 
 # Temp directory — cross-platform
 MNEMO_TMPDIR="${TMPDIR:-/tmp}"
-
-# Token cache files
-_MNEMO_TOKEN_FILE="${MNEMO_TMPDIR}/.mnemo-jwt-token"
-_MNEMO_EXPIRY_FILE="${MNEMO_TMPDIR}/.mnemo-jwt-expiry"
 
 # HTTP response globals
 MNEMO_HTTP_CODE=""
@@ -78,10 +72,6 @@ mnemo_load_config() {
             [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val" || true
             val="$(echo "$content" | jq -r '.apiKey // empty')"
             [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val" || true
-            val="$(echo "$content" | jq -r '.username // empty')"
-            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val" || true
-            val="$(echo "$content" | jq -r '.password // empty')"
-            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val" || true
         else
             local val
             val="$(_mnemo_parse_json_value "$content" "apiUrl")"
@@ -90,10 +80,6 @@ mnemo_load_config() {
             [[ -z "$MNEMO_AUTH_METHOD" && -n "$val" ]] && MNEMO_AUTH_METHOD="$val" || true
             val="$(_mnemo_parse_json_value "$content" "apiKey")"
             [[ -z "$MNEMO_API_KEY" && -n "$val" ]] && MNEMO_API_KEY="$val" || true
-            val="$(_mnemo_parse_json_value "$content" "username")"
-            [[ -z "$MNEMO_USERNAME" && -n "$val" ]] && MNEMO_USERNAME="$val" || true
-            val="$(_mnemo_parse_json_value "$content" "password")"
-            [[ -z "$MNEMO_PASSWORD" && -n "$val" ]] && MNEMO_PASSWORD="$val" || true
         fi
     fi
 
@@ -101,120 +87,23 @@ mnemo_load_config() {
     MNEMO_API_URL="${MNEMO_API_URL:-$_MNEMO_DEFAULT_URL}"
 
     # Auto-detect auth method if not set
-    if [[ -z "$MNEMO_AUTH_METHOD" ]]; then
-        if [[ -n "$MNEMO_API_KEY" ]]; then
-            MNEMO_AUTH_METHOD="apikey"
-        elif [[ -n "$MNEMO_USERNAME" && -n "$MNEMO_PASSWORD" ]]; then
-            MNEMO_AUTH_METHOD="jwt"
-        fi
+    if [[ -z "$MNEMO_AUTH_METHOD" && -n "$MNEMO_API_KEY" ]]; then
+        MNEMO_AUTH_METHOD="apikey"
     fi
 }
 
 # ============================================================================
-# 2. PLATFORM DETECTION
+# 2. AUTHENTICATION
 # ============================================================================
-
-_mnemo_is_gnu_date() {
-    date --version &>/dev/null 2>&1
-}
-
-_mnemo_iso_to_epoch() {
-    # Convert ISO 8601 date string to epoch seconds
-    local iso_date="$1"
-    if _mnemo_is_gnu_date; then
-        date -d "$iso_date" +%s 2>/dev/null || echo 0
-    else
-        # BSD date (macOS)
-        date -jf "%Y-%m-%dT%H:%M:%S" "$iso_date" +%s 2>/dev/null || echo 0
-    fi
-}
-
-_mnemo_now_epoch() {
-    date +%s
-}
-
-# ============================================================================
-# 3. JWT TOKEN CACHING
-# ============================================================================
-
-_mnemo_token_is_valid() {
-    [[ -f "$_MNEMO_TOKEN_FILE" && -f "$_MNEMO_EXPIRY_FILE" ]] || return 1
-    local expiry
-    expiry="$(cat "$_MNEMO_EXPIRY_FILE")"
-    local now
-    now="$(_mnemo_now_epoch)"
-    # Valid if expiry is more than 60 seconds in the future
-    (( expiry > now + 60 )) || return 1
-}
-
-_mnemo_login() {
-    local tmp_resp
-    tmp_resp="$(mktemp "${MNEMO_TMPDIR}/mnemo-login-XXXXXX")"
-    local http_code
-    http_code=$(curl -s -o "$tmp_resp" -w '%{http_code}' \
-        --connect-timeout 10 --max-time 25 \
-        -X POST "${MNEMO_API_URL}/api/auth/login" \
-        -H "Content-Type: application/json" \
-        -d "{\"username\":\"${MNEMO_USERNAME}\",\"password\":\"${MNEMO_PASSWORD}\"}")
-
-    local resp
-    resp="$(cat "$tmp_resp")"
-    rm -f "$tmp_resp"
-
-    if [[ "$http_code" != "200" ]]; then
-        MNEMO_HTTP_CODE="$http_code"
-        MNEMO_RESPONSE="$resp"
-        return 1
-    fi
-
-    local token expiry_str
-    if command -v jq &>/dev/null; then
-        token="$(echo "$resp" | jq -r '.token // empty')"
-        expiry_str="$(echo "$resp" | jq -r '.expiresAt // empty')"
-    else
-        token="$(_mnemo_parse_json_value "$resp" "token")"
-        expiry_str="$(_mnemo_parse_json_value "$resp" "expiresAt")"
-    fi
-
-    if [[ -z "$token" ]]; then
-        MNEMO_HTTP_CODE="$http_code"
-        MNEMO_RESPONSE="Login succeeded but no token in response"
-        return 1
-    fi
-
-    echo -n "$token" > "$_MNEMO_TOKEN_FILE"
-
-    if [[ -n "$expiry_str" ]]; then
-        # Strip fractional seconds and Z for parsing
-        local clean_date
-        clean_date="$(echo "$expiry_str" | sed 's/\.[0-9]*Z$//' | sed 's/Z$//')"
-        local epoch
-        epoch="$(_mnemo_iso_to_epoch "$clean_date")"
-        echo -n "$epoch" > "$_MNEMO_EXPIRY_FILE"
-    else
-        # Default: 55 minutes from now
-        local fallback
-        fallback=$(( $(_mnemo_now_epoch) + 3300 ))
-        echo -n "$fallback" > "$_MNEMO_EXPIRY_FILE"
-    fi
-
-    return 0
-}
 
 _mnemo_get_auth_header() {
-    if [[ "$MNEMO_AUTH_METHOD" == "apikey" ]]; then
+    if [[ "$MNEMO_AUTH_METHOD" == "apikey" && -n "$MNEMO_API_KEY" ]]; then
         echo "X-Api-Key: ${MNEMO_API_KEY}"
         return 0
     fi
 
-    # JWT path
-    if ! _mnemo_token_is_valid; then
-        _mnemo_login || return 1
-    fi
-
-    local token
-    token="$(cat "$_MNEMO_TOKEN_FILE")"
-    echo "Authorization: Bearer ${token}"
+    MNEMO_RESPONSE="No API key configured. Run setup: bash \"\${CLAUDE_PLUGIN_ROOT}/setup/setup.sh\""
+    return 1
 }
 
 # ============================================================================
@@ -228,57 +117,45 @@ _mnemo_request() {
     local method="$1"
     local path="$2"
     local body="${3:-}"
-    local retry_count=0
 
-    while (( retry_count < 2 )); do
-        local auth_header
-        auth_header="$(_mnemo_get_auth_header)" || {
-            MNEMO_HTTP_CODE="000"
-            MNEMO_RESPONSE="Authentication failed"
-            return 1
-        }
+    local auth_header
+    auth_header="$(_mnemo_get_auth_header)" || {
+        MNEMO_HTTP_CODE="000"
+        MNEMO_RESPONSE="Authentication failed"
+        return 1
+    }
 
-        local tmp_resp
-        tmp_resp="$(mktemp "${MNEMO_TMPDIR}/mnemo-resp-XXXXXX")"
+    local tmp_resp
+    tmp_resp="$(mktemp "${MNEMO_TMPDIR}/mnemo-resp-XXXXXX")"
 
-        local curl_args=(-s -o "$tmp_resp" -w '%{http_code}'
-            --connect-timeout 10 --max-time 25
-            -X "$method"
-            -H "$auth_header"
-            -H "Content-Type: application/json")
+    local curl_args=(-s -o "$tmp_resp" -w '%{http_code}'
+        --connect-timeout 10 --max-time 25
+        -X "$method"
+        -H "$auth_header"
+        -H "Content-Type: application/json")
 
-        if [[ -n "$body" ]]; then
-            curl_args+=(-d "$body")
-        fi
+    if [[ -n "$body" ]]; then
+        curl_args+=(-d "$body")
+    fi
 
-        local http_code
-        http_code=$(curl "${curl_args[@]}" "${MNEMO_API_URL}${path}") || {
-            rm -f "$tmp_resp"
-            MNEMO_HTTP_CODE="000"
-            MNEMO_RESPONSE="curl failed"
-            return 1
-        }
-
-        MNEMO_RESPONSE="$(cat "$tmp_resp")"
+    local http_code
+    http_code=$(curl "${curl_args[@]}" "${MNEMO_API_URL}${path}") || {
         rm -f "$tmp_resp"
-        MNEMO_HTTP_CODE="$http_code"
+        MNEMO_HTTP_CODE="000"
+        MNEMO_RESPONSE="curl failed"
+        return 1
+    }
 
-        # If 401 and using JWT, try re-login once
-        if [[ "$http_code" == "401" && "$MNEMO_AUTH_METHOD" != "apikey" && $retry_count -eq 0 ]]; then
-            rm -f "$_MNEMO_TOKEN_FILE" "$_MNEMO_EXPIRY_FILE"
-            retry_count=1
-            continue
-        fi
+    MNEMO_RESPONSE="$(cat "$tmp_resp")"
+    rm -f "$tmp_resp"
+    MNEMO_HTTP_CODE="$http_code"
 
-        # 2xx = success
-        if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
-            return 0
-        else
-            return 1
-        fi
-    done
-
-    return 1
+    # 2xx = success
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # ============================================================================

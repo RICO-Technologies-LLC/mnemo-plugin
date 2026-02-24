@@ -1,7 +1,5 @@
 {
   "apiUrl": "https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net",
   "authMethod": "apikey",
-  "apiKey": "",
-  "username": "",
-  "password": ""
+  "apiKey": ""
 }
