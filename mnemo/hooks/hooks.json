@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/session-start.sh\"",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; bash \"$P/hooks-handlers/session-start.sh\"'",
             "timeout": 30
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/stop-check.sh\"",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; bash \"$P/hooks-handlers/stop-check.sh\"'",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/precompact-check.sh\"",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; bash \"$P/hooks-handlers/precompact-check.sh\"'",
             "timeout": 10
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/plan-accepted-check.sh\"",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; bash \"$P/hooks-handlers/plan-accepted-check.sh\"'",
             "timeout": 10
           }
         ]
