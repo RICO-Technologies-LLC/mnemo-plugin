@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# setup.sh — Interactive Mnemo plugin setup
+# mnemo-setup.sh — Interactive Mnemo plugin setup
 # Two modes:
 #   Register: Creates a new organization (subscriber) and admin account
 #   Join:     Joins an existing organization using credentials from your admin
 #
 # Usage:
-#   bash setup.sh
-#   bash setup.sh --name "Acme Corp" --email admin@acme.com --first-name John --last-name Doe --password "Pass1234!"
-#   bash setup.sh --join --email user@acme.com --password "Pass1234!"
-#   bash setup.sh --api-url http://localhost:5291
+#   bash mnemo-setup.sh
+#   bash mnemo-setup.sh --name "Acme Corp" --email admin@acme.com --first-name John --last-name Doe --password "Pass1234!"
+#   bash mnemo-setup.sh --join --email user@acme.com --password "Pass1234!"
+#   bash mnemo-setup.sh --api-url http://localhost:5291
 
 set -euo pipefail
 
@@ -36,8 +36,8 @@ while [[ $# -gt 0 ]]; do
         --api-url)     API_URL="$2"; shift 2 ;;
         --help|-h)
             echo "Usage:"
-            echo "  Register new org:  bash setup.sh [--name NAME] [--email EMAIL] [--first-name F] [--last-name L] [--password PASS]"
-            echo "  Join existing org: bash setup.sh --join [--email EMAIL] [--password PASS]"
+            echo "  Register new org:  bash mnemo-setup.sh [--name NAME] [--email EMAIL] [--first-name F] [--last-name L] [--password PASS]"
+            echo "  Join existing org: bash mnemo-setup.sh --join [--email EMAIL] [--password PASS]"
             echo "  Options:           [--api-url URL]"
             exit 0 ;;
         *) echo "Unknown argument: $1"; exit 1 ;;

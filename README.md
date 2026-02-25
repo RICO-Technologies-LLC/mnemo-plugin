@@ -78,7 +78,7 @@ claude
 
 It will tell you Mnemo is not configured yet. Run:
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/setup/setup.sh"
+bash "${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh"
 ```
 
 - Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you
