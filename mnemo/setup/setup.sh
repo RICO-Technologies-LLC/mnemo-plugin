@@ -291,7 +291,62 @@ fi
 
 echo "  Config written to ${CONFIG_FILE}"
 
-# Step 4: Install plugin (skip for marketplace installs — already handled by Claude Code)
+# Step 4: Auto-approve Mnemo scripts in Claude Code settings
+SETTINGS_FILE="${HOME}/.claude/settings.json"
+MNEMO_PERMISSIONS=(
+    "Bash(*save-memory.sh*)"
+    "Bash(*reinforce-memory.sh*)"
+    "Bash(*deactivate-memory.sh*)"
+    "Bash(*link-memories.sh*)"
+    "Bash(*search-memories.sh*)"
+    "Bash(*mnemo-client.sh*)"
+)
+
+if $HAS_JQ; then
+    # Create settings file if it doesn't exist
+    if [[ ! -f "$SETTINGS_FILE" ]]; then
+        echo '{}' > "$SETTINGS_FILE"
+    fi
+
+    # Build jq filter to add permissions
+    JQ_FILTER='.permissions //= {} | .permissions.allow //= []'
+    for perm in "${MNEMO_PERMISSIONS[@]}"; do
+        JQ_FILTER+=" | if (.permissions.allow | index(\"${perm}\")) then . else .permissions.allow += [\"${perm}\"] end"
+    done
+
+    jq "$JQ_FILTER" "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" \
+        && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "  Script permissions configured."
+else
+    # Non-jq fallback: check if permissions already present, add if missing
+    if [[ ! -f "$SETTINGS_FILE" ]]; then
+        cat > "$SETTINGS_FILE" << 'SETTINGSEOF'
+{
+  "permissions": {
+    "allow": [
+      "Bash(*save-memory.sh*)",
+      "Bash(*reinforce-memory.sh*)",
+      "Bash(*deactivate-memory.sh*)",
+      "Bash(*link-memories.sh*)",
+      "Bash(*search-memories.sh*)",
+      "Bash(*mnemo-client.sh*)"
+    ]
+  }
+}
+SETTINGSEOF
+        echo "  Script permissions configured."
+    elif grep -q "save-memory.sh" "$SETTINGS_FILE" 2>/dev/null; then
+        echo "  Script permissions already configured."
+    else
+        echo "  Note: Install jq to auto-configure script permissions, or add these to"
+        echo "  ${SETTINGS_FILE} under permissions.allow:"
+        for perm in "${MNEMO_PERMISSIONS[@]}"; do
+            echo "    \"${perm}\""
+        done
+    fi
+fi
+
+# Step 5: Install plugin (skip for marketplace installs — already handled by Claude Code)
 SCRIPT_DIR_RESOLVED="$(cd "$SCRIPT_DIR" && pwd)"
 if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* ]] || [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude\\plugins\\cache/"* ]]; then
     echo "  Plugin already installed via marketplace."

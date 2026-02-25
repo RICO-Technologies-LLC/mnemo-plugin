@@ -7,42 +7,126 @@ Persistent memory system that gives Claude Code long-term recall across sessions
 - **Context compression**: Saves continuity notes so nothing is lost
 - **Plan accepted**: Saves accepted plans as decision records
 
-## Quick Start
+## Setup (macOS)
 
-### 1. Add the marketplace
+Copy and paste each step into Terminal. Wait for each step to finish before moving to the next.
 
+### 1. Install Xcode Command Line Tools
+
+```bash
+xcode-select --install
+```
+
+A popup will appear — click **Install** and wait for it to finish. If it says "already installed", move on.
+
+### 2. Install Homebrew
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Follow any prompts. If it says Homebrew is already installed, move on.
+
+> **Important:** After install, Homebrew may tell you to run two commands to add it to your PATH. Copy and run those commands before continuing.
+
+### 3. Install Node.js
+
+```bash
+brew install node
+```
+
+Verify:
+```bash
+node --version
+```
+Should show v22 or higher (anything 18+ is fine).
+
+### 4. Install Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Launch and sign in with your Anthropic account:
+```bash
+claude
+```
+
+Once signed in, type `/exit` to close.
+
+### 5. Install the Mnemo plugin
+
+Launch Claude Code:
+```bash
+claude
+```
+
+Run these two commands inside Claude Code:
 ```
 /plugin marketplace add RICO-Technologies-LLC/mnemo-plugin
-```
-
-### 2. Install the plugin
-
-```
 /plugin install mnemo@mnemo-plugin
 ```
 
-### 3. Restart Claude Code
+Type `/exit` to close.
 
-### 4. Run setup
+### 6. Run setup
 
-On first session, you'll be prompted to configure your account. Or run manually:
+Launch Claude Code:
+```bash
+claude
+```
 
+It will tell you Mnemo is not configured yet. Run:
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/setup/setup.sh"
 ```
 
-Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you.
+- Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you
+- Follow the prompts (name, email, password)
+- It generates your API key and saves config automatically
 
-### 5. Restart Claude Code again
+### 7. Restart Claude Code
 
-Your memories will load automatically from now on.
+Type `/exit`, then:
+```bash
+claude
+```
 
-## Requirements
+Done! Mnemo is active. On your first session, Claude will help you create your initial memories. Type `/mnemo:help` anytime for a quick reference.
 
-- **Claude Code** (latest version)
-- **bash** (Git Bash on Windows, native on macOS/Linux)
-- **curl** (included with Git Bash, native on macOS/Linux)
-- **jq** (optional but recommended)
+## Setup (Windows)
+
+### 1. Install Node.js
+
+Download from [nodejs.org](https://nodejs.org/) (LTS version). Run the installer with default settings.
+
+### 2. Install Git for Windows
+
+Download from [git-scm.com](https://git-scm.com/download/win). Run the installer with default settings. This provides Git Bash, which the plugin requires.
+
+### 3. Install Claude Code
+
+Open a terminal and run:
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Then follow Steps 4–7 from the macOS instructions above.
+
+## Setup (Existing Claude Code Users)
+
+If you already have Claude Code installed:
+
+```
+/plugin marketplace add RICO-Technologies-LLC/mnemo-plugin
+/plugin install mnemo@mnemo-plugin
+```
+
+Restart Claude Code, run setup when prompted, restart again. Done.
+
+## Auto-Updates
+
+When installed from the GitHub marketplace, the plugin updates automatically whenever a new version is pushed. No action needed.
 
 ## Documentation
 
