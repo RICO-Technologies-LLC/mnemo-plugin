@@ -338,11 +338,48 @@ SETTINGSEOF
     elif grep -q "save-memory.sh" "$SETTINGS_FILE" 2>/dev/null; then
         echo "  Script permissions already configured."
     else
-        echo "  Note: Install jq to auto-configure script permissions, or add these to"
-        echo "  ${SETTINGS_FILE} under permissions.allow:"
-        for perm in "${MNEMO_PERMISSIONS[@]}"; do
-            echo "    \"${perm}\""
-        done
+        # settings.json exists but needs permissions — try Python, then manual fallback
+        PERMS_ADDED=false
+        PY_CMD=""
+        if command -v python3 &>/dev/null; then
+            PY_CMD="python3"
+        elif command -v python &>/dev/null; then
+            PY_CMD="python"
+        fi
+
+        if [[ -n "$PY_CMD" ]]; then
+            "$PY_CMD" - "$SETTINGS_FILE" << 'PYEOF' && PERMS_ADDED=true
+import json, sys
+sf = sys.argv[1]
+perms = [
+    "Bash(*save-memory.sh*)",
+    "Bash(*reinforce-memory.sh*)",
+    "Bash(*deactivate-memory.sh*)",
+    "Bash(*link-memories.sh*)",
+    "Bash(*search-memories.sh*)",
+    "Bash(*mnemo-client.sh*)"
+]
+with open(sf) as f:
+    data = json.load(f)
+data.setdefault("permissions", {}).setdefault("allow", [])
+for p in perms:
+    if p not in data["permissions"]["allow"]:
+        data["permissions"]["allow"].append(p)
+with open(sf, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+PYEOF
+        fi
+
+        if $PERMS_ADDED; then
+            echo "  Script permissions configured."
+        else
+            echo "  Note: Could not auto-configure permissions (jq and python not found)."
+            echo "  Add these to ${SETTINGS_FILE} under permissions.allow:"
+            for perm in "${MNEMO_PERMISSIONS[@]}"; do
+                echo "    \"${perm}\""
+            done
+        fi
     fi
 fi
 
