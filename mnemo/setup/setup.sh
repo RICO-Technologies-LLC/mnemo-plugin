@@ -65,6 +65,16 @@ json_value() {
     fi
 }
 
+# Helper: escape a string for safe JSON embedding (handles \, ", newlines)
+json_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"   # \ → \\
+    s="${s//\"/\\\"}"   # " → \"
+    s="${s//$'\n'/\\n}"  # newline → \n
+    s="${s//$'\r'/}"     # strip CR
+    printf '%s' "$s"
+}
+
 echo ""
 echo "=== Mnemo Setup ==="
 echo ""
@@ -121,7 +131,7 @@ if [[ "$MODE" == "join" ]]; then
     # Step 1: Login
     echo "Logging in..."
 
-    LOGIN_BODY="{\"email\":\"$(echo "$EMAIL" | sed 's/"/\\"/g')\",\"password\":\"$(echo "$PASSWORD" | sed 's/"/\\"/g')\"}"
+    LOGIN_BODY="{\"email\":\"$(json_escape "$EMAIL")\",\"password\":\"$(json_escape "$PASSWORD")\"}"
 
     LOGIN_TMP="$(mktemp)"
     LOGIN_CODE=$(curl -s -o "$LOGIN_TMP" -w '%{http_code}' \
@@ -205,7 +215,7 @@ else
     echo "Registering with ${API_URL}..."
 
     # Step 1: Register
-    REGISTER_BODY="{\"subscriberName\":\"$(echo "$SUBSCRIBER_NAME" | sed 's/"/\\"/g')\",\"email\":\"$(echo "$EMAIL" | sed 's/"/\\"/g')\",\"password\":\"$(echo "$PASSWORD" | sed 's/"/\\"/g')\",\"firstName\":\"$(echo "$FIRST_NAME" | sed 's/"/\\"/g')\",\"lastName\":\"$(echo "$LAST_NAME" | sed 's/"/\\"/g')\"}"
+    REGISTER_BODY="{\"subscriberName\":\"$(json_escape "$SUBSCRIBER_NAME")\",\"email\":\"$(json_escape "$EMAIL")\",\"password\":\"$(json_escape "$PASSWORD")\",\"firstName\":\"$(json_escape "$FIRST_NAME")\",\"lastName\":\"$(json_escape "$LAST_NAME")\"}"
 
     REG_TMP="$(mktemp)"
     REG_CODE=$(curl -s -o "$REG_TMP" -w '%{http_code}' \
