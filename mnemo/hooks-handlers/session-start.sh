@@ -11,7 +11,7 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 WORK_DIR="$PWD"
 
 # Check if config is loaded — guide unconfigured users to run setup
-if [[ -z "${MNEMO_API_URL:-}" ]]; then
+if [[ -z "${MNEMO_API_KEY:-}" ]]; then
     printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo is installed but not configured yet. Run setup to create your account and API key:\\n\\nbash \\\"${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh\\\"\\n\\nThen restart Claude Code."}}'
     exit 0
 fi
