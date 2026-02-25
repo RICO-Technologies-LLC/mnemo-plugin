@@ -1,6 +1,6 @@
 ---
 name: memory-system
-description: Persistent SQL memory store — how to store, retrieve, search, link, and manage memories across sessions.
+description: The Mnemo memory system skill has been loaded. I now have access to the persistent memory store for maintaining context across sessions, computers, and teams.
 ---
 
 # Claude Memory System
