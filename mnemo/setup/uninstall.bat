@@ -72,6 +72,15 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "  }" ^
   "}" ^
   "" ^
+  "# Clear plugin cache" ^
+  "foreach ($cacheName in @('mnemo-plugin', 'internal-plugins')) {" ^
+  "  $cacheDir = Join-Path $env:USERPROFILE \".claude\\plugins\\cache\\$cacheName\\mnemo\";" ^
+  "  if (Test-Path $cacheDir) {" ^
+  "    Remove-Item $cacheDir -Recurse -Force;" ^
+  "    Write-Host \"  Cleared plugin cache ($cacheName)\"" ^
+  "  }" ^
+  "}" ^
+  "" ^
   "Write-Host '';" ^
   "Write-Host 'Mnemo uninstalled.' -ForegroundColor Green;" ^
   "Write-Host 'Restart Claude Code to take effect.';" ^

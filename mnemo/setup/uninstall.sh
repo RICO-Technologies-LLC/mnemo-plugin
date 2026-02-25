@@ -130,6 +130,15 @@ PYEOF
     fi
 fi
 
+# Step 3: Clear plugin cache
+for cache_name in "mnemo-plugin" "internal-plugins"; do
+    CACHE_DIR="${CLAUDE_DIR}/plugins/cache/${cache_name}/mnemo"
+    if [[ -d "$CACHE_DIR" ]]; then
+        rm -rf "$CACHE_DIR"
+        echo "  Cleared plugin cache (${cache_name})"
+    fi
+done
+
 echo ""
 echo "Mnemo uninstalled."
 echo "Restart Claude Code to take effect."
