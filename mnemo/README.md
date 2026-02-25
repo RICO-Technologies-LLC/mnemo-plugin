@@ -25,14 +25,9 @@ Cross-platform: works on Windows (Git Bash), macOS, and Linux.
    /plugin install mnemo@mnemo-plugin
    ```
 
-3. Restart Claude Code.
+3. Restart Claude Code. Claude will guide you through setup automatically.
 
-4. Run setup (first session will prompt you, or run manually):
-   ```bash
-   bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
-   ```
-
-5. Restart Claude Code again after setup.
+4. Restart Claude Code again after setup completes.
 
 ### From Local Directory
 
@@ -50,28 +45,11 @@ Then run `setup/mnemo-setup.sh` to create your account and API key.
 
 ## Setup
 
-The setup script registers your account, generates an API key, and writes your config file.
+When you start Claude Code with the plugin installed but not configured, Claude will automatically walk you through setup. It asks whether you're creating a new organization or joining an existing one, collects your details conversationally, and handles everything.
 
-**Interactive:**
-```bash
-bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
-```
+You can also run `/mnemo:setup` at any time to reconfigure or if the automatic prompt didn't trigger.
 
-Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you.
-
-**With arguments:**
-```bash
-# New organization
-bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh" \
-  --name "Acme Corp" --email admin@acme.com \
-  --first-name John --last-name Doe --password "Pass1234!"
-
-# Join existing
-bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh" --join \
-  --email user@acme.com --password "Pass1234!"
-```
-
-Restart Claude Code after setup. Your first session will guide you through creating your initial memories.
+Restart Claude Code after setup completes. Your first session will guide you through creating your initial memories.
 
 ## Uninstall
 
@@ -111,6 +89,7 @@ Setup creates `~/.claude/mnemo-config.json` automatically. You can also create i
 
 ## Commands
 
+- `/mnemo:setup` — Run or re-run the account setup flow
 - `/mnemo:load-memories` — Manually reload memories mid-session (e.g., after switching context)
 
 ## Skill

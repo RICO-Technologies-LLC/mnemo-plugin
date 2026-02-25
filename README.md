@@ -69,21 +69,16 @@ Run these two commands inside Claude Code:
 
 Type `/exit` to close.
 
-### 6. Run setup
+### 6. Set up your account
 
 Launch Claude Code:
 ```bash
 claude
 ```
 
-It will tell you Mnemo is not configured yet. Run:
-```bash
-bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
-```
+Claude will detect that MMRY AI is installed but not configured, and walk you through setup automatically. It will ask whether you're creating a new organization or joining an existing one, collect your details, and handle the rest.
 
-- Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you
-- Follow the prompts (name, email, password)
-- It generates your API key and saves config automatically
+If the automatic prompt doesn't appear, type `/mnemo:setup` to start manually.
 
 ### 7. Restart Claude Code
 
@@ -92,7 +87,7 @@ Type `/exit`, then:
 claude
 ```
 
-Done! Mnemo is active. On your first session, Claude will help you create your initial memories. Type `/mnemo:help` anytime for a quick reference.
+Done! MMRY AI is active. On your first session, Claude will help you create your initial memories. Type `/mnemo:help` anytime for a quick reference.
 
 ## Setup (Windows)
 
@@ -122,7 +117,7 @@ If you already have Claude Code installed:
 /plugin install mnemo@mnemo-plugin
 ```
 
-Restart Claude Code, run setup when prompted, restart again. Done.
+Restart Claude Code. Claude will guide you through setup automatically. Restart again after setup completes. Done.
 
 ## Auto-Updates
 
