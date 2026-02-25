@@ -395,7 +395,7 @@ fi
 
 # Step 5: Install plugin (skip for marketplace installs — already handled by Claude Code)
 SCRIPT_DIR_RESOLVED="$(cd "$SCRIPT_DIR" && pwd)"
-if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* ]] || [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude\\plugins\\cache/"* ]]; then
+if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* ]]; then
     echo "  Plugin already installed via marketplace."
 else
     echo "Installing plugin..."
