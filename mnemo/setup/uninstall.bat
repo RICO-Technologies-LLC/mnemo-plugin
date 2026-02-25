@@ -72,6 +72,13 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "  }" ^
   "}" ^
   "" ^
+  "# Remove stable hooks directory" ^
+  "$mnemoDir = Join-Path $env:USERPROFILE '.claude\mnemo';" ^
+  "if (Test-Path $mnemoDir) {" ^
+  "  Remove-Item $mnemoDir -Recurse -Force;" ^
+  "  Write-Host '  Removed ~/.claude/mnemo/'" ^
+  "}" ^
+  "" ^
   "# Clear plugin cache" ^
   "foreach ($cacheName in @('mnemo-plugin', 'internal-plugins')) {" ^
   "  $cacheDir = Join-Path $env:USERPROFILE \".claude\\plugins\\cache\\$cacheName\\mnemo\";" ^

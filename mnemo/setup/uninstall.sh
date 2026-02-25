@@ -130,7 +130,13 @@ PYEOF
     fi
 fi
 
-# Step 3: Clear plugin cache
+# Step 3: Remove stable hooks directory
+if [[ -d "${HOME}/.claude/mnemo" ]]; then
+    rm -rf "${HOME}/.claude/mnemo"
+    echo "  Removed ~/.claude/mnemo/"
+fi
+
+# Step 4: Clear plugin cache
 for cache_name in "mnemo-plugin" "internal-plugins"; do
     CACHE_DIR="${CLAUDE_DIR}/plugins/cache/${cache_name}/mnemo"
     if [[ -d "$CACHE_DIR" ]]; then
