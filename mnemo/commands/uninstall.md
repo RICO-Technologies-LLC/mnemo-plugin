@@ -4,4 +4,9 @@ Run the Mnemo uninstall script now:
 bash "${CLAUDE_PLUGIN_ROOT}/setup/uninstall.sh"
 ```
 
-After the script completes, tell the user to restart Claude Code to finish uninstalling.
+After the script completes, tell the user to run these two commands to finish removing the plugin, then restart Claude Code:
+
+```
+/plugin uninstall mnemo@mnemo-plugin
+/plugin marketplace remove mnemo-plugin
+```
