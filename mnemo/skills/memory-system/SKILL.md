@@ -1,6 +1,6 @@
 ---
 name: memory-system
-description: The Mnemo memory system skill has been loaded. I now have access to the persistent memory store for maintaining context across sessions, computers, and teams.
+description: The Mnemo memory system skill has been loaded. I now have access to the persistent memory store for maintaining context across sessions, computers, and teams. Say "remember this" to save something, or /mnemo:help for a quick reference.
 ---
 
 # Claude Memory System
