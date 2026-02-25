@@ -1,0 +1,2 @@
+# Force LF line endings for shell scripts (CRLF breaks shebang on Windows Git Bash)
+*.sh text eol=lf
