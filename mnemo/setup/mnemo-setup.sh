@@ -250,20 +250,24 @@ if [[ -z "$TOKEN" ]]; then
     exit 1
 fi
 
-# Step 2: Generate API key
+# Step 2: Generate API key (labeled with hostname for multi-machine identification)
 echo "Generating API key..."
+
+MACHINE_LABEL="$(hostname 2>/dev/null || echo "unknown")"
+KEY_BODY="{\"label\":\"${MACHINE_LABEL}\"}"
 
 KEY_TMP="$(mktemp)"
 KEY_CODE=$(curl -s -o "$KEY_TMP" -w '%{http_code}' \
     --connect-timeout 10 --max-time 25 \
     -X POST "${API_URL}/api/auth/apikey" \
     -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: application/json")
+    -H "Content-Type: application/json" \
+    -d "$KEY_BODY")
 
 KEY_RESP="$(cat "$KEY_TMP")"
 rm -f "$KEY_TMP"
 
-if [[ "$KEY_CODE" != "200" ]]; then
+if [[ "$KEY_CODE" != "201" ]]; then
     echo "Error: API key generation failed (HTTP ${KEY_CODE})."
     echo "$KEY_RESP"
     exit 1
