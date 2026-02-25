@@ -2,35 +2,135 @@
 # uninstall.sh — Uninstall Mnemo plugin for Claude Code (macOS/Linux)
 set -euo pipefail
 
-SETTINGS_PATH="${HOME}/.claude/settings.json"
-MARKETPLACE_NAME="internal-plugins"
-PLUGIN_NAME="mnemo@internal-plugins"
+CLAUDE_DIR="${HOME}/.claude"
+SETTINGS_PATH="${CLAUDE_DIR}/settings.json"
+CONFIG_PATH="${CLAUDE_DIR}/mnemo-config.json"
 
-if [[ ! -f "$SETTINGS_PATH" ]]; then
-    echo "Nothing to uninstall."
-    exit 0
-fi
+# Handle both marketplace and local install key names
+PLUGIN_NAMES=("mnemo@mnemo-plugin" "mnemo@internal-plugins")
+MARKETPLACE_NAMES=("mnemo-plugin" "internal-plugins")
+MNEMO_PERMISSIONS=(
+    "Bash(*save-memory.sh*)"
+    "Bash(*reinforce-memory.sh*)"
+    "Bash(*deactivate-memory.sh*)"
+    "Bash(*link-memories.sh*)"
+    "Bash(*search-memories.sh*)"
+    "Bash(*mnemo-client.sh*)"
+)
 
-if ! command -v jq &>/dev/null; then
-    echo "Error: jq is required for uninstallation."
-    exit 1
-fi
-
-settings="$(cat "$SETTINGS_PATH")"
-
-# Remove plugin and marketplace using jq
-settings="$(echo "$settings" | jq --arg name "$PLUGIN_NAME" '
-    if .enabledPlugins then del(.enabledPlugins[$name]) else . end |
-    if .enabledPlugins and (.enabledPlugins | length) == 0 then del(.enabledPlugins) else . end
-')"
-
-settings="$(echo "$settings" | jq --arg name "$MARKETPLACE_NAME" '
-    if .extraKnownMarketplaces then del(.extraKnownMarketplaces[$name]) else . end |
-    if .extraKnownMarketplaces and (.extraKnownMarketplaces | length) == 0 then del(.extraKnownMarketplaces) else . end
-')"
-
-echo "$settings" | jq '.' > "$SETTINGS_PATH"
-
-echo "Mnemo memory plugin uninstalled!"
 echo ""
+echo "=== Mnemo Uninstall ==="
+echo ""
+
+# Step 1: Remove config file
+if [[ -f "$CONFIG_PATH" ]]; then
+    rm -f "$CONFIG_PATH"
+    echo "  Removed mnemo-config.json"
+else
+    echo "  No config file found (already removed)."
+fi
+
+# Step 2: Clean settings.json (plugin, marketplace, permissions)
+if [[ ! -f "$SETTINGS_PATH" ]]; then
+    echo "  No settings.json found."
+else
+    HAS_JQ=false
+    if command -v jq &>/dev/null; then
+        HAS_JQ=true
+    fi
+
+    if $HAS_JQ; then
+        settings="$(cat "$SETTINGS_PATH")"
+
+        # Remove plugin entries
+        for name in "${PLUGIN_NAMES[@]}"; do
+            settings="$(echo "$settings" | jq --arg name "$name" '
+                if .enabledPlugins then del(.enabledPlugins[$name]) else . end
+            ')"
+        done
+        settings="$(echo "$settings" | jq '
+            if .enabledPlugins and (.enabledPlugins | length) == 0 then del(.enabledPlugins) else . end
+        ')"
+
+        # Remove marketplace entries
+        for name in "${MARKETPLACE_NAMES[@]}"; do
+            settings="$(echo "$settings" | jq --arg name "$name" '
+                if .extraKnownMarketplaces then del(.extraKnownMarketplaces[$name]) else . end
+            ')"
+        done
+        settings="$(echo "$settings" | jq '
+            if .extraKnownMarketplaces and (.extraKnownMarketplaces | length) == 0 then del(.extraKnownMarketplaces) else . end
+        ')"
+
+        # Remove Mnemo permissions
+        for perm in "${MNEMO_PERMISSIONS[@]}"; do
+            settings="$(echo "$settings" | jq --arg p "$perm" '
+                if .permissions.allow then .permissions.allow -= [$p] else . end
+            ')"
+        done
+        settings="$(echo "$settings" | jq '
+            if .permissions.allow and (.permissions.allow | length) == 0 then del(.permissions.allow) else . end |
+            if .permissions and (.permissions | length) == 0 then del(.permissions) else . end
+        ')"
+
+        echo "$settings" | jq '.' > "$SETTINGS_PATH"
+        echo "  Cleaned settings.json (plugin, marketplace, permissions)"
+    else
+        # Try Python fallback
+        PY_CMD=""
+        if command -v python3 &>/dev/null; then
+            PY_CMD="python3"
+        elif command -v python &>/dev/null; then
+            PY_CMD="python"
+        fi
+
+        if [[ -n "$PY_CMD" ]]; then
+            "$PY_CMD" - "$SETTINGS_PATH" << 'PYEOF'
+import json, sys
+sf = sys.argv[1]
+plugin_names = ["mnemo@mnemo-plugin", "mnemo@internal-plugins"]
+marketplace_names = ["mnemo-plugin", "internal-plugins"]
+mnemo_perms = [
+    "Bash(*save-memory.sh*)",
+    "Bash(*reinforce-memory.sh*)",
+    "Bash(*deactivate-memory.sh*)",
+    "Bash(*link-memories.sh*)",
+    "Bash(*search-memories.sh*)",
+    "Bash(*mnemo-client.sh*)"
+]
+with open(sf) as f:
+    data = json.load(f)
+if "enabledPlugins" in data:
+    for name in plugin_names:
+        data["enabledPlugins"].pop(name, None)
+    if not data["enabledPlugins"]:
+        del data["enabledPlugins"]
+if "extraKnownMarketplaces" in data:
+    for name in marketplace_names:
+        data["extraKnownMarketplaces"].pop(name, None)
+    if not data["extraKnownMarketplaces"]:
+        del data["extraKnownMarketplaces"]
+if "permissions" in data and "allow" in data["permissions"]:
+    data["permissions"]["allow"] = [p for p in data["permissions"]["allow"] if p not in mnemo_perms]
+    if not data["permissions"]["allow"]:
+        del data["permissions"]["allow"]
+    if not data["permissions"]:
+        del data["permissions"]
+with open(sf, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+PYEOF
+            echo "  Cleaned settings.json (plugin, marketplace, permissions)"
+        else
+            echo "  Warning: jq and python not found. Manually edit ${SETTINGS_PATH}:"
+            echo "    - Remove mnemo entries from enabledPlugins"
+            echo "    - Remove mnemo entries from extraKnownMarketplaces"
+            echo "    - Remove Mnemo permissions from permissions.allow"
+        fi
+    fi
+fi
+
+echo ""
+echo "Mnemo uninstalled."
 echo "Restart Claude Code to take effect."
+echo ""
