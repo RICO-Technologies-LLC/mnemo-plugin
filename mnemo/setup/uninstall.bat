@@ -76,5 +76,3 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "Write-Host 'Mnemo uninstalled.' -ForegroundColor Green;" ^
   "Write-Host 'Restart Claude Code to take effect.';" ^
   "Write-Host ''"
-echo.
-pause
