@@ -29,7 +29,7 @@ Cross-platform: works on Windows (Git Bash), macOS, and Linux.
 
 4. Run setup (first session will prompt you, or run manually):
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh"
+   bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
    ```
 
 5. Restart Claude Code again after setup.
@@ -54,7 +54,7 @@ The setup script registers your account, generates an API key, and writes your c
 
 **Interactive:**
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh"
+bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
 ```
 
 Choose **Create a new organization** to start fresh, or **Join an existing organization** if your admin has created an account for you.
@@ -62,12 +62,12 @@ Choose **Create a new organization** to start fresh, or **Join an existing organ
 **With arguments:**
 ```bash
 # New organization
-bash "${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh" \
+bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh" \
   --name "Acme Corp" --email admin@acme.com \
   --first-name John --last-name Doe --password "Pass1234!"
 
 # Join existing
-bash "${CLAUDE_PLUGIN_ROOT}/setup/mnemo-setup.sh" --join \
+bash "${HOME}/.claude/mnemo/setup/mnemo-setup.sh" --join \
   --email user@acme.com --password "Pass1234!"
 ```
 

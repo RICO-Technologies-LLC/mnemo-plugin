@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; mkdir -p \"${HOME}/.claude/mnemo/hooks\" && cp \"$P\"/hooks-handlers/*.sh \"${HOME}/.claude/mnemo/hooks/\" && bash \"${HOME}/.claude/mnemo/hooks/session-start.sh\"'",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; rm -rf \"${HOME}/.claude/mnemo/hooks\" 2>/dev/null; mkdir -p \"${HOME}/.claude/mnemo/hooks-handlers\" \"${HOME}/.claude/mnemo/setup\" && cp \"$P\"/hooks-handlers/*.sh \"${HOME}/.claude/mnemo/hooks-handlers/\" && cp \"$P\"/setup/*.sh \"${HOME}/.claude/mnemo/setup/\" 2>/dev/null; bash \"${HOME}/.claude/mnemo/hooks-handlers/session-start.sh\"'",
             "timeout": 30
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks/stop-check.sh\"",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/stop-check.sh\"",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks/precompact-check.sh\"",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/precompact-check.sh\"",
             "timeout": 10
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks/plan-accepted-check.sh\"",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/plan-accepted-check.sh\"",
             "timeout": 10
           }
         ]
