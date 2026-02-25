@@ -12,7 +12,7 @@ WORK_DIR="$PWD"
 
 # Check if config is loaded — guide unconfigured users to run setup
 if [[ -z "${MNEMO_API_KEY:-}" ]]; then
-    SETUP_SCRIPT="${HOME}/.claude/mnemo/setup/mnemo-setup.sh"
+    SETUP_SCRIPT="${PLUGIN_ROOT}/setup/mnemo-setup.sh"
     # shellcheck disable=SC2016
     SETUP_MSG='MMRY AI is installed but needs to be set up. Guide the user through setup conversationally. Do NOT show them bash commands to run — you will handle everything.
 
