@@ -20,6 +20,10 @@ MEM_FILE="${MNEMO_TMPDIR}/mnemo-memories.md"
 
 # Load startup memories
 if ! mnemo_get_startup_memories "$WORK_DIR"; then
+    if [[ "${MNEMO_HTTP_CODE:-}" == "403" ]]; then
+        printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo trial has expired. Inform the user that their free trial has ended and they need to upgrade to continue using memory features."}}'
+        exit 0
+    fi
     escaped_err="$(echo "$MNEMO_RESPONSE" | sed "s/\"/'/g" | sed 's/\\/\\\\/g')"
     printf '{"error":"session-start failed: %s"}' "$escaped_err"
     exit 0
