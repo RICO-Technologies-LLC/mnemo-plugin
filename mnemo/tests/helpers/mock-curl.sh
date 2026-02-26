@@ -19,6 +19,19 @@ while (( i < ${#args[@]} )); do
     case "${args[$i]}" in
         -X) (( i++ )); METHOD="${args[$i]}" ;;
         -d) (( i++ )); BODY="${args[$i]}" ;;
+        --data-binary)
+            (( i++ ))
+            _dbarg="${args[$i]}"
+            if [[ "$_dbarg" == @* ]]; then
+                # Read body from file (--data-binary @filename)
+                _bodyfile="${_dbarg:1}"
+                if [[ -f "$_bodyfile" ]]; then
+                    BODY="$(cat "$_bodyfile")"
+                fi
+            else
+                BODY="$_dbarg"
+            fi
+            ;;
         -o) (( i++ )); OUTPUT_FILE="${args[$i]}" ;;
         -w) (( i++ )); WRITE_OUT="${args[$i]}" ;;
         -s|-S) ;; # silent flags, ignore

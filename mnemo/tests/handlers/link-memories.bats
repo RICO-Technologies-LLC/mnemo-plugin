@@ -28,7 +28,7 @@ setup() {
 @test "link: succeeds with all three arguments" {
     run bash "$PLUGIN_ROOT/hooks-handlers/link-memories.sh" 42 87 "related"
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Linked memory 42 -> 87 (related)"* ]]
+    [[ "$output" == *"Memories linked."* ]]
 }
 
 @test "link: handles API error" {
@@ -37,4 +37,11 @@ setup() {
     run bash "$PLUGIN_ROOT/hooks-handlers/link-memories.sh" 1 2 "invalid"
     [[ "$status" -ne 0 ]]
     [[ "$output" == *"Error"* ]]
+}
+
+@test "link: does not output memory IDs" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/link-memories.sh" 42 87 "related"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" != *"42"* ]]
+    [[ "$output" != *"87"* ]]
 }

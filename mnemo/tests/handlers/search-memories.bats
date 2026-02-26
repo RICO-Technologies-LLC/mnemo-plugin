@@ -36,3 +36,23 @@ setup() {
     [[ "$status" -ne 0 ]]
     [[ "$output" == *"Error"* ]]
 }
+
+@test "search: output does not include memory IDs" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/search-memories.sh" "test query"
+    [[ "$status" -eq 0 ]]
+    # With jq output format: "Tier | Scope | Topic\n  Content\n---"
+    # IDs should never appear in user-facing output
+    if command -v jq &>/dev/null; then
+        [[ "$output" != *'"id"'* ]]
+    fi
+}
+
+@test "search: shows memory count with jq" {
+    if ! command -v jq &>/dev/null; then
+        skip "Requires jq"
+    fi
+    run bash "$PLUGIN_ROOT/hooks-handlers/search-memories.sh" "test query"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Found"* ]]
+    [[ "$output" == *"memories"* ]] || [[ "$output" == *"memor"* ]]
+}

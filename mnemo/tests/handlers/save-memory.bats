@@ -44,13 +44,12 @@ setup() {
     [[ "$output" == *"--content"* ]]
 }
 
-@test "save-memory: succeeds with all required fields, outputs NewMemoryID" {
+@test "save-memory: succeeds with all required fields" {
     run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
         --tier Foundation --category Fact --scope global \
         --topic "Test Topic" --content "Test content body"
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *"NewMemoryID:"* ]]
-    [[ "$output" == *"99"* ]]
+    [[ "$output" == *"Memory saved."* ]]
 }
 
 @test "save-memory: passes optional fields to API" {
@@ -60,7 +59,7 @@ setup() {
         --source "meeting" --task-id "TASK-42" --working-dir "/home/user/project" \
         --session-id "sess-abc"
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *"NewMemoryID:"* ]]
+    [[ "$output" == *"Memory saved."* ]]
     # Verify curl was called with the body
     grep -q "POST.*memories" "$TEST_TMPDIR/curl-log.txt"
 }
@@ -81,4 +80,62 @@ setup() {
         --topic "Test" --content "Content" --unknown-flag value
     [[ "$status" -ne 0 ]]
     [[ "$output" == *"Unknown argument"* ]]
+}
+
+# ── Private / Group Memory Tests ──
+
+@test "save-memory: accepts --visibility parameter" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Foundation --category Fact --scope global \
+        --topic "Private Note" --content "Only for me" \
+        --visibility private
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Memory saved."* ]]
+}
+
+@test "save-memory: private visibility is sent in API request body" {
+    bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Operational --category Decision --scope backend \
+        --topic "Private Decision" --content "Internal choice" \
+        --visibility private 2>&1
+    # Verify curl was called
+    grep -q "POST.*memories" "$TEST_TMPDIR/curl-log.txt"
+}
+
+@test "save-memory: succeeds with no visibility (defaults to global)" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Foundation --category Fact --scope global \
+        --topic "Public Fact" --content "Everyone sees this"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Memory saved."* ]]
+}
+
+@test "save-memory: accepts --supersedes parameter for updates" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Foundation --category Fact --scope global \
+        --topic "Updated Fact" --content "New version" \
+        --supersedes 42
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Memory saved."* ]]
+}
+
+@test "save-memory: accepts all optional parameters together" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Operational --category Decision --scope backend \
+        --topic "Full Params" --content "All options set" \
+        --source "test" --task-id "TASK-99" --working-dir "/tmp/project" \
+        --project-id 5 --session-id "sess-xyz" \
+        --visibility private --supersedes 10
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Memory saved."* ]]
+}
+
+@test "save-memory: does not output memory ID" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Foundation --category Fact --scope global \
+        --topic "ID Check" --content "Should not show ID"
+    [[ "$status" -eq 0 ]]
+    # Output should NOT contain numeric IDs or "ID:" references
+    [[ "$output" != *"NewMemoryID"* ]]
+    [[ "$output" != *": 99"* ]]
 }

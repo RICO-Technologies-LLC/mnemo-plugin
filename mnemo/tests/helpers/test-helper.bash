@@ -7,8 +7,11 @@ load '../libs/bats-support/load'
 load '../libs/bats-assert/load'
 
 # Set plugin root to the repo's mnemo/ directory
+# Allow override via env var (set in run-tests.sh or manually)
+if [[ -z "${PLUGIN_ROOT:-}" ]]; then
+    PLUGIN_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+fi
 export PLUGIN_ROOT
-PLUGIN_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
 
 # Temp directory for test artifacts
