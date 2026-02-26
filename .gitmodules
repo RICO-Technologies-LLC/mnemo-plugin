@@ -1,0 +1,9 @@
+[submodule "mnemo/tests/libs/bats-core"]
+	path = mnemo/tests/libs/bats-core
+	url = https://github.com/bats-core/bats-core.git
+[submodule "mnemo/tests/libs/bats-support"]
+	path = mnemo/tests/libs/bats-support
+	url = https://github.com/bats-core/bats-support.git
+[submodule "mnemo/tests/libs/bats-assert"]
+	path = mnemo/tests/libs/bats-assert
+	url = https://github.com/bats-core/bats-assert.git

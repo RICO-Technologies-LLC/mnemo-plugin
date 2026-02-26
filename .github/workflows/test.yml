@@ -1,0 +1,45 @@
+name: Plugin Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  offline-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run offline tests (structural + unit + handlers)
+        run: |
+          cd mnemo/tests
+          chmod +x run-tests.sh
+          chmod +x libs/bats-core/bin/bats
+          ./run-tests.sh offline
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: offline-tests
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run integration tests
+        env:
+          MNEMO_INTEGRATION_API_KEY: ${{ secrets.MNEMO_INTEGRATION_API_KEY }}
+        run: |
+          cd mnemo/tests
+          chmod +x run-tests.sh
+          chmod +x libs/bats-core/bin/bats
+          ./run-tests.sh integration
