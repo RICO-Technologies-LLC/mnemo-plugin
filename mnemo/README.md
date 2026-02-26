@@ -89,6 +89,8 @@ Setup creates `~/.claude/mnemo-config.json` automatically. You can also create i
 
 ## Commands
 
+- `/mnemo:save` — Save a memory (or just say "remember this")
+- `/mnemo:remember` — Same as save
 - `/mnemo:setup` — Run or re-run the account setup flow
 - `/mnemo:load-memories` — Manually reload memories mid-session (e.g., after switching context)
 
