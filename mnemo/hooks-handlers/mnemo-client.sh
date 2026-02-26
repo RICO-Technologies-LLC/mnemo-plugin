@@ -132,22 +132,25 @@ _mnemo_request() {
         --connect-timeout 10 --max-time 25
         -X "$method"
         -H "$auth_header"
-        -H "Content-Type: application/json")
+        -H "Content-Type: application/json; charset=utf-8")
 
+    local tmp_body=""
     if [[ -n "$body" ]]; then
-        curl_args+=(-d "$body")
+        tmp_body="$(mktemp "${MNEMO_TMPDIR}/mnemo-body-XXXXXX")"
+        printf '%s' "$body" > "$tmp_body"
+        curl_args+=(--data-binary "@${tmp_body}")
     fi
 
     local http_code
     http_code=$(curl "${curl_args[@]}" "${MNEMO_API_URL}${path}") || {
-        rm -f "$tmp_resp"
+        rm -f "$tmp_resp" "$tmp_body"
         MNEMO_HTTP_CODE="000"
         MNEMO_RESPONSE="curl failed"
         return 1
     }
 
     MNEMO_RESPONSE="$(cat "$tmp_resp")"
-    rm -f "$tmp_resp"
+    rm -f "$tmp_resp" "$tmp_body"
     MNEMO_HTTP_CODE="$http_code"
 
     # 2xx = success
@@ -170,7 +173,7 @@ _mnemo_json_escape() {
     s="${s//$'\n'/\\n}"     # newline
     s="${s//$'\r'/\\r}"     # carriage return
     s="${s//$'\t'/\\t}"     # tab
-    echo -n "$s"
+    printf '%s' "$s"
 }
 
 _mnemo_build_json() {
