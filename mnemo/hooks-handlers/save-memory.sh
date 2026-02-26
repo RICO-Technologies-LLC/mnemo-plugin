@@ -41,13 +41,7 @@ if mnemo_create_memory "$TIER" "$CATEGORY" "$SCOPE" "$TOPIC" "$CONTENT" \
     "$SOURCE" "$TASK_ID" "$WORKING_DIR" "$PROJECT_ID" "$SESSION_ID" \
     "$VISIBILITY" "" "$SUPERSEDES"; then
 
-    # Extract ID from response
-    if command -v jq &>/dev/null; then
-        new_id="$(echo "$MNEMO_RESPONSE" | jq -r '.id // empty')"
-    else
-        new_id="$(echo "$MNEMO_RESPONSE" | { grep -o '"id":[0-9]*' || true; } | head -1 | sed 's/"id"://')"
-    fi
-    echo "NewMemoryID: ${new_id}"
+    echo "Memory saved."
 else
     echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
     exit 1

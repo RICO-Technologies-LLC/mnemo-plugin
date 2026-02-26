@@ -15,7 +15,7 @@ if [[ -z "$ID" ]]; then
 fi
 
 if mnemo_deactivate_memory "$ID"; then
-    echo "Deactivated memory ID: ${ID}"
+    echo "Memory deactivated."
 else
     echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
     exit 1

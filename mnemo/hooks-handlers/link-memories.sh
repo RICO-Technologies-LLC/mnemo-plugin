@@ -18,7 +18,7 @@ if [[ -z "$SOURCE_ID" || -z "$TARGET_ID" || -z "$LINK_TYPE" ]]; then
 fi
 
 if mnemo_create_link "$SOURCE_ID" "$TARGET_ID" "$LINK_TYPE"; then
-    echo "Linked memory ${SOURCE_ID} -> ${TARGET_ID} (${LINK_TYPE})"
+    echo "Memories linked."
 else
     echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
     exit 1

@@ -15,7 +15,7 @@ if [[ -z "$ID" ]]; then
 fi
 
 if mnemo_reinforce_memory "$ID"; then
-    echo "Reinforced memory ID: ${ID}"
+    echo "Memory reinforced."
 else
     echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
     exit 1

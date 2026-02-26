@@ -21,7 +21,7 @@ if mnemo_search_memories "$KEYWORDS" "$SCOPE"; then
         count="$(echo "$MNEMO_RESPONSE" | jq 'length')"
         echo "Found ${count} memories:"
         echo ""
-        echo "$MNEMO_RESPONSE" | jq -r '.[] | "ID: \(.id) | \(.memoryTier) | \(.scope) | \(.topic)\n  \(.content)\n---"'
+        echo "$MNEMO_RESPONSE" | jq -r '.[] | "\(.memoryTier) | \(.scope) | \(.topic)\n  \(.content)\n---"'
     else
         echo "Results:"
         echo "$MNEMO_RESPONSE"
