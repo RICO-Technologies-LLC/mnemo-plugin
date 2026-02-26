@@ -18,7 +18,7 @@ setup() {
 @test "deactivate: succeeds with valid ID" {
     run bash "$PLUGIN_ROOT/hooks-handlers/deactivate-memory.sh" 42
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Deactivated memory ID: 42"* ]]
+    [[ "$output" == *"Memory deactivated."* ]]
 }
 
 @test "deactivate: handles API error" {
@@ -27,4 +27,11 @@ setup() {
     run bash "$PLUGIN_ROOT/hooks-handlers/deactivate-memory.sh" 999
     [[ "$status" -ne 0 ]]
     [[ "$output" == *"Error"* ]]
+}
+
+@test "deactivate: does not output memory ID" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/deactivate-memory.sh" 42
+    [[ "$status" -eq 0 ]]
+    [[ "$output" != *"42"* ]]
+    [[ "$output" != *"ID:"* ]]
 }

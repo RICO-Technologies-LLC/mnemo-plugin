@@ -18,7 +18,7 @@ setup() {
 @test "reinforce: succeeds with valid ID" {
     run bash "$PLUGIN_ROOT/hooks-handlers/reinforce-memory.sh" 42
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Reinforced memory ID: 42"* ]]
+    [[ "$output" == *"Memory reinforced."* ]]
 }
 
 @test "reinforce: handles API error" {
@@ -27,4 +27,11 @@ setup() {
     run bash "$PLUGIN_ROOT/hooks-handlers/reinforce-memory.sh" 999
     [[ "$status" -ne 0 ]]
     [[ "$output" == *"Error"* ]]
+}
+
+@test "reinforce: does not output memory ID" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/reinforce-memory.sh" 42
+    [[ "$status" -eq 0 ]]
+    [[ "$output" != *"42"* ]]
+    [[ "$output" != *"ID:"* ]]
 }
