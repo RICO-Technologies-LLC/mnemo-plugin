@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; [ -z \"$P\" ] || [ ! -d \"$P/hooks-handlers\" ] && P=\"$(find \"${HOME}/.claude/plugins\" -path \"*/mnemo/hooks-handlers\" -type d 2>/dev/null | head -1 | sed \"s|/hooks-handlers$||\")\"; rm -rf \"${HOME}/.claude/mnemo/hooks\" 2>/dev/null; mkdir -p \"${HOME}/.claude/mnemo/hooks-handlers\" \"${HOME}/.claude/mnemo/setup\"; cp \"$P\"/hooks-handlers/*.sh \"${HOME}/.claude/mnemo/hooks-handlers/\" 2>/dev/null; cp \"$P\"/setup/*.sh \"${HOME}/.claude/mnemo/setup/\" 2>/dev/null; bash \"$P/hooks-handlers/session-start.sh\"'",
+            "command": "bash -c 'P=\"${CLAUDE_PLUGIN_ROOT}\"; P=\"${P//\\\\//}\"; [ -z \"$P\" ] || [ ! -d \"$P/hooks-handlers\" ] && P=\"$(find \"${HOME}/.claude/plugins\" -path \"*/mnemo/hooks-handlers\" -type d 2>/dev/null | head -1 | sed \"s|/hooks-handlers$||\")\"; [ -z \"$P\" ] && { echo \"Mnemo: Could not locate plugin root. Run /mnemo:setup\"; exit 0; }; rm -rf \"${HOME}/.claude/mnemo/hooks\" 2>/dev/null; mkdir -p \"${HOME}/.claude/mnemo/hooks-handlers\" \"${HOME}/.claude/mnemo/setup\"; cp \"$P\"/hooks-handlers/*.sh \"${HOME}/.claude/mnemo/hooks-handlers/\"; cp \"$P\"/setup/*.sh \"${HOME}/.claude/mnemo/setup/\"; bash \"$P/hooks-handlers/session-start.sh\"'",
             "timeout": 30
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/stop-check.sh\"",
+            "command": "bash -c '[ -f \"${HOME}/.claude/mnemo/hooks-handlers/stop-check.sh\" ] && bash \"${HOME}/.claude/mnemo/hooks-handlers/stop-check.sh\" || true'",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/precompact-check.sh\"",
+            "command": "bash -c '[ -f \"${HOME}/.claude/mnemo/hooks-handlers/precompact-check.sh\" ] && bash \"${HOME}/.claude/mnemo/hooks-handlers/precompact-check.sh\" || true'",
             "timeout": 10
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/plan-accepted-check.sh\"",
+            "command": "bash -c '[ -f \"${HOME}/.claude/mnemo/hooks-handlers/plan-accepted-check.sh\" ] && bash \"${HOME}/.claude/mnemo/hooks-handlers/plan-accepted-check.sh\" || true'",
             "timeout": 10
           }
         ]

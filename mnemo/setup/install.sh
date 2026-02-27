@@ -18,6 +18,12 @@ if ! command -v jq &>/dev/null; then
     exit 1
 fi
 
+# Warn if bash version is below 4 (macOS ships bash 3.2)
+if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+    echo "Warning: bash ${BASH_VERSION} detected. Bash 4+ is recommended."
+    echo "  macOS: brew install bash"
+fi
+
 # Load or create settings
 if [[ -f "$SETTINGS_PATH" ]]; then
     settings="$(cat "$SETTINGS_PATH")"

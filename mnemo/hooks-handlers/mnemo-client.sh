@@ -102,7 +102,7 @@ _mnemo_get_auth_header() {
         return 0
     fi
 
-    MNEMO_RESPONSE="No API key configured. Run setup: bash \"\${HOME}/.claude/mnemo/setup/mnemo-setup.sh\""
+    MNEMO_RESPONSE="No API key configured. Run /mnemo:setup to configure your account."
     return 1
 }
 
