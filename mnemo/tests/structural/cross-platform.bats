@@ -43,34 +43,34 @@ load '../helpers/test-helper'
     grep -q 'BASH_VERSINFO' "$PLUGIN_ROOT/setup/install.sh"
 }
 
-# ── hooks.json platform resilience ──
+# ── hooks.json Windows compatibility ──
 
-@test "hooks.json uses bash -c wrapper for Stop hook (portable)" {
+@test "hooks.json contains no bash -c (Windows cmd.exe safe)" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    local stop_cmd
-    stop_cmd="$(grep -A5 '"Stop"' "$hooks_file" | grep '"command"')"
-    [[ "$stop_cmd" == *'bash -c'* ]]
+    ! grep -q 'bash -c' "$hooks_file"
 }
 
-@test "hooks.json uses bash -c wrapper for PreCompact hook (portable)" {
+@test "hooks.json contains no single quotes in hook commands" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    local precompact_cmd
-    precompact_cmd="$(grep -A5 '"PreCompact"' "$hooks_file" | grep '"command"')"
-    [[ "$precompact_cmd" == *'bash -c'* ]]
+    # Extract only command lines and check for single quotes
+    local commands
+    commands="$(grep '"command"' "$hooks_file")"
+    ! echo "$commands" | grep -q "'"
 }
 
-@test "hooks.json uses bash -c wrapper for PostToolUse hook (portable)" {
+@test "hooks.json contains no && or || shell operators in hook commands" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    local posttool_cmd
-    posttool_cmd="$(grep -A10 '"PostToolUse"' "$hooks_file" | grep '"command"')"
-    [[ "$posttool_cmd" == *'bash -c'* ]]
+    local commands
+    commands="$(grep '"command"' "$hooks_file")"
+    ! echo "$commands" | grep -q '&&'
+    ! echo "$commands" | grep -q '||'
 }
 
-@test "SessionStart hook uses portable HOME variable" {
+@test "SessionStart hook uses CLAUDE_PLUGIN_ROOT variable" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
     local session_cmd
     session_cmd="$(grep -A10 '"SessionStart"' "$hooks_file" | grep '"command"')"
-    [[ "$session_cmd" == *'${HOME}'* ]]
+    [[ "$session_cmd" == *'CLAUDE_PLUGIN_ROOT'* ]]
 }
 
 # ── mnemo-client.sh portability ──

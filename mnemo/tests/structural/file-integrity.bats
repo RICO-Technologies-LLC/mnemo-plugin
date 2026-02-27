@@ -13,6 +13,14 @@ load '../helpers/test-helper'
     [[ -f "$PLUGIN_ROOT/hooks-handlers/session-start.sh" ]]
 }
 
+@test "hooks-handlers/session-init.sh exists" {
+    [[ -f "$PLUGIN_ROOT/hooks-handlers/session-init.sh" ]]
+}
+
+@test "hooks-handlers/hook-guard.sh exists" {
+    [[ -f "$PLUGIN_ROOT/hooks-handlers/hook-guard.sh" ]]
+}
+
 @test "hooks-handlers/save-memory.sh exists" {
     [[ -f "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" ]]
 }
