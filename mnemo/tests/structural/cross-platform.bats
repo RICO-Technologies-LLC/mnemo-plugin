@@ -98,6 +98,20 @@ load '../helpers/test-helper'
     [[ "$session_cmd" == *'CLAUDE_PLUGIN_ROOT'* ]]
 }
 
+# ── session-init.sh syncs all platforms ──
+
+@test "session-init.sh copies .bat setup files for Windows" {
+    grep -q 'setup/\*\.bat' "$PLUGIN_ROOT/hooks-handlers/session-init.sh"
+}
+
+@test "session-init.sh copies .ps1 setup files for Windows" {
+    grep -q 'setup/\*\.ps1' "$PLUGIN_ROOT/hooks-handlers/session-init.sh"
+}
+
+@test "session-init.sh copies .sh setup files" {
+    grep -q 'setup/\*\.sh' "$PLUGIN_ROOT/hooks-handlers/session-init.sh"
+}
+
 # ── mnemo-client.sh portability ──
 
 @test "mnemo-client.sh uses portable shebang (env bash)" {

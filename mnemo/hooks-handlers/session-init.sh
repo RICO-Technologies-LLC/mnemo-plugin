@@ -25,9 +25,11 @@ fi
 rm -rf "${HOME}/.claude/mnemo/hooks" 2>/dev/null
 mkdir -p "${HOME}/.claude/mnemo/hooks-handlers" "${HOME}/.claude/mnemo/setup"
 
-# Copy current handler and setup scripts
+# Copy current handler and setup scripts (all platforms)
 cp "$P"/hooks-handlers/*.sh "${HOME}/.claude/mnemo/hooks-handlers/"
 cp "$P"/setup/*.sh "${HOME}/.claude/mnemo/setup/"
+cp "$P"/setup/*.bat "${HOME}/.claude/mnemo/setup/" 2>/dev/null || true
+cp "$P"/setup/*.ps1 "${HOME}/.claude/mnemo/setup/" 2>/dev/null || true
 
 # Delegate to the main session-start logic
 bash "$P/hooks-handlers/session-start.sh"
