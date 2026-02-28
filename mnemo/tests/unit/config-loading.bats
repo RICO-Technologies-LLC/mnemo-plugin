@@ -10,7 +10,9 @@ setup() {
     export MNEMO_API_KEY=""
     export MNEMO_AUTH_METHOD=""
     export MNEMO_CONFIG_FILE="$TEST_TMPDIR/mnemo-config.json"
-    # Prevent auto-init from sourcing — we'll call mnemo_load_config manually
+    # Isolate from real ~/.claude/mnemo-config.json
+    export HOME="$TEST_TMPDIR/fakehome"
+    mkdir -p "$HOME/.claude"
 }
 
 # Helper to source client fresh (it runs mnemo_load_config on source)
@@ -40,7 +42,7 @@ _source_client() {
     # No config file at $MNEMO_CONFIG_FILE
     rm -f "$MNEMO_CONFIG_FILE"
     _source_client
-    [[ "$MNEMO_API_URL" == "https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net" ]]
+    [[ "$MNEMO_API_URL" == "https://mmryai.com" ]]
 }
 
 @test "config: auto-detects apikey auth when apiKey is set" {
@@ -83,7 +85,7 @@ EOF
     export MNEMO_CONFIG_FILE="$TEST_TMPDIR/nonexistent.json"
     _source_client
     # Should use defaults, not error
-    [[ "$MNEMO_API_URL" == "https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net" ]]
+    [[ "$MNEMO_API_URL" == "https://mmryai.com" ]]
 }
 
 @test "config: plugin root config takes priority over home dir config" {

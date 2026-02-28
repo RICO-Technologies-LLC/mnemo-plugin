@@ -70,7 +70,7 @@ Setup creates `~/.claude/mnemo-config.json` automatically. You can also create i
 
 ```json
 {
-  "apiUrl": "https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net",
+  "apiUrl": "https://mmryai.com",
   "authMethod": "apikey",
   "apiKey": "your-api-key-here"
 }
