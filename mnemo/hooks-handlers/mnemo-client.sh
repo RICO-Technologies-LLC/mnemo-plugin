@@ -161,6 +161,19 @@ _mnemo_request() {
     fi
 }
 
+_mnemo_format_error() {
+    # Format an API error for display. Handles 402 (credits exhausted) specially.
+    # Usage: _mnemo_format_error [context]
+    #   context: optional label like "save" or "search"
+    local context="${1:-request}"
+    if [[ "$MNEMO_HTTP_CODE" == "402" ]]; then
+        echo "Credits exhausted. Your Mnemo subscription has run out of API credits." >&2
+        echo "Visit https://mmryai.com or contact your admin to add more credits." >&2
+    else
+        echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    fi
+}
+
 # ============================================================================
 # 5. JSON HELPERS
 # ============================================================================

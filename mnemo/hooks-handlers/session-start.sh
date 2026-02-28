@@ -83,6 +83,10 @@ if ! mnemo_get_startup_memories "$WORK_DIR"; then
         printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo trial has expired. Inform the user that their free trial has ended and they need to upgrade to continue using memory features."}}'
         exit 0
     fi
+    if [[ "${MNEMO_HTTP_CODE:-}" == "402" ]]; then
+        printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo credits exhausted. Inform the user their API credits have run out. Visit https://mmryai.com to add more credits or upgrade their plan."}}'
+        exit 0
+    fi
     escaped_err="$(echo "$MNEMO_RESPONSE" | sed "s/\"/'/g" | sed 's/\\/\\\\/g')"
     printf '{"error":"session-start failed: %s"}' "$escaped_err"
     exit 0

@@ -17,6 +17,6 @@ fi
 if mnemo_deactivate_memory "$ID"; then
     echo "Memory deactivated."
 else
-    echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    _mnemo_format_error
     exit 1
 fi

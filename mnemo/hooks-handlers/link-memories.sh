@@ -20,6 +20,6 @@ fi
 if mnemo_create_link "$SOURCE_ID" "$TARGET_ID" "$LINK_TYPE"; then
     echo "Memories linked."
 else
-    echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    _mnemo_format_error
     exit 1
 fi
