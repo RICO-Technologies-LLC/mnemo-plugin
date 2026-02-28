@@ -3,45 +3,58 @@
 
 load '../helpers/test-helper'
 
-# ── hooks.json file-existence guards ──
+# ── hooks.json uses hook-guard.sh for guarded hooks ──
 
-@test "Stop hook contains file-existence guard" {
+@test "Stop hook delegates to hook-guard.sh" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
     local stop_cmd
     stop_cmd="$(grep -A5 '"Stop"' "$hooks_file" | grep '"command"')"
-    [[ "$stop_cmd" == *'[ -f '* ]]
+    [[ "$stop_cmd" == *'hook-guard.sh'* ]]
+    [[ "$stop_cmd" == *'stop-check'* ]]
 }
 
-@test "PreCompact hook contains file-existence guard" {
+@test "PreCompact hook delegates to hook-guard.sh" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
     local precompact_cmd
     precompact_cmd="$(grep -A5 '"PreCompact"' "$hooks_file" | grep '"command"')"
-    [[ "$precompact_cmd" == *'[ -f '* ]]
+    [[ "$precompact_cmd" == *'hook-guard.sh'* ]]
+    [[ "$precompact_cmd" == *'precompact-check'* ]]
 }
 
-@test "PostToolUse hook contains file-existence guard" {
+@test "PostToolUse hook delegates to hook-guard.sh" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
     local posttool_cmd
     posttool_cmd="$(grep -A10 '"PostToolUse"' "$hooks_file" | grep '"command"')"
-    [[ "$posttool_cmd" == *'[ -f '* ]]
+    [[ "$posttool_cmd" == *'hook-guard.sh'* ]]
+    [[ "$posttool_cmd" == *'plan-accepted-check'* ]]
 }
 
-# ── SessionStart error visibility ──
-
-@test "SessionStart hook does not suppress cp errors with 2>/dev/null" {
+@test "SessionStart hook delegates to session-init.sh" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    # Extract the SessionStart command line
     local session_cmd
     session_cmd="$(grep -A10 '"SessionStart"' "$hooks_file" | grep '"command"')"
-    # The cp commands should not have 2>/dev/null
-    # Split on cp to check each cp invocation
-    local cp_fragments
-    cp_fragments="$(echo "$session_cmd" | grep -o 'cp [^;]*')"
-    while IFS= read -r fragment; do
-        if [[ "$fragment" == *'2>/dev/null'* ]]; then
-            fail "SessionStart cp command suppresses errors: $fragment"
-        fi
-    done <<< "$cp_fragments"
+    [[ "$session_cmd" == *'session-init.sh'* ]]
+}
+
+# ── hooks.json has no bash -c (Windows quoting fix) ──
+
+@test "hooks.json contains no bash -c commands" {
+    local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
+    ! grep -q 'bash -c' "$hooks_file"
+}
+
+# ── hook-guard.sh behavior ──
+
+@test "hook-guard.sh exits 0 silently when target script does not exist" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/hook-guard.sh" nonexistent-script
+    [[ "$status" -eq 0 ]]
+    [[ -z "$output" ]]
+}
+
+@test "hook-guard.sh exits 0 silently when no argument given" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/hook-guard.sh"
+    [[ "$status" -eq 0 ]]
+    [[ -z "$output" ]]
 }
 
 # ── mnemo-client.sh error message ──

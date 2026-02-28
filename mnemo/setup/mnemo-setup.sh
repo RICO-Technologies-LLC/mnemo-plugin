@@ -403,12 +403,28 @@ if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* || "$SCRIPT_DIR_RESO
     echo "  Plugin already installed via marketplace."
 else
     echo "Installing plugin..."
-    if [[ -f "${SCRIPT_DIR}/install.sh" ]]; then
-        bash "${SCRIPT_DIR}/install.sh" 2>/dev/null
-        echo "  Plugin installed."
-    elif [[ -f "${SCRIPT_DIR}/install.bat" ]]; then
-        echo "  Run install.bat to complete plugin installation on Windows."
-    fi
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            # Windows: delegate to PowerShell script (no bash dependency for install)
+            if [[ -f "${SCRIPT_DIR}/install.ps1" ]]; then
+                powershell.exe -ExecutionPolicy Bypass -File "${SCRIPT_DIR}/install.ps1" 2>/dev/null
+                echo "  Plugin installed."
+            else
+                echo "  Error: install.ps1 not found."
+                exit 1
+            fi
+            ;;
+        *)
+            # macOS/Linux: use bash install script
+            if [[ -f "${SCRIPT_DIR}/install.sh" ]]; then
+                bash "${SCRIPT_DIR}/install.sh" 2>/dev/null
+                echo "  Plugin installed."
+            else
+                echo "  Error: install.sh not found."
+                exit 1
+            fi
+            ;;
+    esac
 
     # Clear stale cache (local installs only)
     CACHE_DIR="${HOME}/.claude/plugins/cache/internal-plugins/mnemo"
