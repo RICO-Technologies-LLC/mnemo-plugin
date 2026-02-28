@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/hook-guard.sh\" stop-check",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/hook-guard.sh\" stop-check",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/hook-guard.sh\" precompact-check",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/hook-guard.sh\" precompact-check",
             "timeout": 10
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/hook-guard.sh\" plan-accepted-check",
+            "command": "bash \"${HOME}/.claude/mnemo/hooks-handlers/hook-guard.sh\" plan-accepted-check",
             "timeout": 10
           }
         ]
