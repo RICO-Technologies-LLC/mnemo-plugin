@@ -3,30 +3,40 @@
 
 load '../helpers/test-helper'
 
-# ── install.bat (Windows) ──
+# ── install.bat (Windows CMD wrapper) ──
 
 @test "install.bat exists" {
     [[ -f "$PLUGIN_ROOT/setup/install.bat" ]]
 }
 
-@test "install.bat checks for bash in PATH" {
-    grep -q 'Get-Command bash' "$PLUGIN_ROOT/setup/install.bat"
+@test "install.bat delegates to install.ps1" {
+    grep -q 'install.ps1' "$PLUGIN_ROOT/setup/install.bat"
 }
 
-@test "install.bat uses git --exec-path to locate Git bash" {
-    grep -q 'git --exec-path' "$PLUGIN_ROOT/setup/install.bat"
+# ── install.ps1 (Windows PowerShell) ──
+
+@test "install.ps1 exists" {
+    [[ -f "$PLUGIN_ROOT/setup/install.ps1" ]]
 }
 
-@test "install.bat checks common Git install paths as fallback" {
-    grep -q 'Program Files\\Git\\bin\\bash.exe' "$PLUGIN_ROOT/setup/install.bat"
+@test "install.ps1 checks for bash in PATH" {
+    grep -q 'Get-Command bash' "$PLUGIN_ROOT/setup/install.ps1"
 }
 
-@test "install.bat adds Git bin to user PATH when bash not found" {
-    grep -q 'SetEnvironmentVariable' "$PLUGIN_ROOT/setup/install.bat"
+@test "install.ps1 uses git --exec-path to locate Git bash" {
+    grep -q 'git --exec-path' "$PLUGIN_ROOT/setup/install.ps1"
 }
 
-@test "install.bat aborts with error if bash not found anywhere" {
-    grep -q 'bash.exe not found' "$PLUGIN_ROOT/setup/install.bat"
+@test "install.ps1 checks common Git install paths as fallback" {
+    grep -q 'Program Files\\Git\\bin\\bash.exe' "$PLUGIN_ROOT/setup/install.ps1"
+}
+
+@test "install.ps1 adds Git bin to user PATH when bash not found" {
+    grep -q 'SetEnvironmentVariable' "$PLUGIN_ROOT/setup/install.ps1"
+}
+
+@test "install.ps1 aborts with error if bash not found anywhere" {
+    grep -q 'bash.exe not found' "$PLUGIN_ROOT/setup/install.ps1"
 }
 
 # ── install.sh (macOS/Linux) ──
@@ -41,6 +51,21 @@ load '../helpers/test-helper'
 
 @test "install.sh warns about bash version below 4" {
     grep -q 'BASH_VERSINFO' "$PLUGIN_ROOT/setup/install.sh"
+}
+
+# ── mnemo-setup.sh platform dispatch ──
+
+@test "mnemo-setup.sh dispatches to install.ps1 on Windows (MINGW/MSYS/CYGWIN)" {
+    grep -q 'MINGW\|MSYS\|CYGWIN' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+    grep -q 'install.ps1' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+}
+
+@test "mnemo-setup.sh dispatches to install.sh on non-Windows" {
+    grep -q 'install.sh' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+}
+
+@test "mnemo-setup.sh uses uname -s for platform detection" {
+    grep -q 'uname -s' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
 }
 
 # ── hooks.json Windows compatibility ──

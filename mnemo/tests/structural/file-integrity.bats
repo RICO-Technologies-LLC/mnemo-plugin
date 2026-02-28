@@ -99,6 +99,10 @@ load '../helpers/test-helper'
     [[ -f "$PLUGIN_ROOT/setup/install.sh" ]]
 }
 
+@test "setup/install.ps1 exists" {
+    [[ -f "$PLUGIN_ROOT/setup/install.ps1" ]]
+}
+
 @test "setup/uninstall.sh exists" {
     [[ -f "$PLUGIN_ROOT/setup/uninstall.sh" ]]
 }
