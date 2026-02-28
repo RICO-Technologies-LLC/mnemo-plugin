@@ -21,7 +21,7 @@ MNEMO_HTTP_CODE=""
 MNEMO_RESPONSE=""
 
 # Default API URL
-_MNEMO_DEFAULT_URL="https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net"
+_MNEMO_DEFAULT_URL="https://mmryai.com"
 
 _mnemo_urlencode() {
     # URL-encode a string using sed (cross-platform, no curl trick)

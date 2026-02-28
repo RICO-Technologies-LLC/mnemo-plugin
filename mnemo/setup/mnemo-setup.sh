@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Defaults
-API_URL="https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net"
+API_URL="https://mmryai.com"
 MODE=""  # "register" or "join"
 SUBSCRIBER_NAME=""
 EMAIL=""
