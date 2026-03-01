@@ -10,6 +10,9 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 
 WORK_DIR="$PWD"
 
+# Persist launch directory so later commands use the session root, not transient $PWD
+echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir"
+
 # Check if config is loaded — guide unconfigured users to run setup
 if [[ -z "${MNEMO_API_KEY:-}" ]]; then
     API_URL="https://mmryai.com"

@@ -22,7 +22,7 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
      --scope "SCOPE" \
      --topic "TOPIC" \
      --content "CONTENT" \
-     --working-dir "$PWD" \
+     --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
      --session-id "$CLAUDE_SESSION_ID"
    ```
 

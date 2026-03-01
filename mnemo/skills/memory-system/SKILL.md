@@ -117,7 +117,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/save-memory.sh" \
   --session-id "$CLAUDE_SESSION_ID"
 ```
 
-Optional parameters (`--task-id`, `--project-id`, `--visibility`, `--supersedes`) can be omitted — they default to empty/NULL. **Always include `--working-dir "$PWD"` and `--session-id "$CLAUDE_SESSION_ID"`.** Returns `NewMemoryID` on success.
+Optional parameters (`--task-id`, `--project-id`, `--visibility`, `--supersedes`) can be omitted — they default to empty/NULL. **Always include `--session-id "$CLAUDE_SESSION_ID"`.** `--working-dir` is optional — if omitted, it defaults to the session launch directory (persisted at session start). Returns `NewMemoryID` on success.
 
 ## When to Store a Memory
 Store a memory when any of the following happen:
@@ -288,9 +288,9 @@ Store enough that any Claude session can do a great job working with the team. D
 
 ## Working Directory
 
-**Always pass `--working-dir "$PWD"` when saving memories.** The API records it for both directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — you don't need to omit it to make a memory universal. Recording it simply tells future sessions where the memory was created.
+`--working-dir` is optional. If omitted, `save-memory.sh` reads the session launch directory from `${TMPDIR:-/tmp}/mnemo-session-dir` (written by `session-start.sh` at session startup). This ensures the recorded directory is always the project root where Claude Code was launched, not a transient subdirectory or worktree. Falls back to `$PWD` if the session dir file doesn't exist.
 
-**Important:** Always use `$PWD` — never hardcode a specific path. Each session may run from a different directory depending on the project.
+The API records the working directory for directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — recording it simply tells future sessions where the memory was created.
 
 **Examples:**
 ```bash
