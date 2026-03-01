@@ -31,6 +31,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Default working directory from session launch dir if not provided
+if [[ -z "$WORKING_DIR" ]]; then
+    WORKING_DIR="$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")"
+fi
+
 # Validate required fields
 if [[ -z "$TIER" || -z "$CATEGORY" || -z "$SCOPE" || -z "$TOPIC" || -z "$CONTENT" ]]; then
     echo "Error: --tier, --category, --scope, --topic, and --content are required" >&2
