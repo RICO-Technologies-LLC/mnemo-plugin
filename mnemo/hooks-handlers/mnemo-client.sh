@@ -186,6 +186,8 @@ _mnemo_json_escape() {
     s="${s//$'\n'/\\n}"     # newline
     s="${s//$'\r'/\\r}"     # carriage return
     s="${s//$'\t'/\\t}"     # tab
+    s="${s//$'\x08'/\\b}"   # backspace
+    s="${s//$'\x0c'/\\f}"   # form feed
     printf '%s' "$s"
 }
 
