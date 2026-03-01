@@ -15,6 +15,7 @@ MNEMO_PERMISSIONS=(
     "Bash(*deactivate-memory.sh*)"
     "Bash(*link-memories.sh*)"
     "Bash(*search-memories.sh*)"
+    "Bash(*submit-feedback.sh*)"
     "Bash(*mnemo-client.sh*)"
 )
 
@@ -96,6 +97,7 @@ mnemo_perms = [
     "Bash(*deactivate-memory.sh*)",
     "Bash(*link-memories.sh*)",
     "Bash(*search-memories.sh*)",
+    "Bash(*submit-feedback.sh*)",
     "Bash(*mnemo-client.sh*)"
 ]
 with open(sf) as f:

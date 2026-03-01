@@ -1,7 +1,7 @@
 {
   "name": "mnemo",
   "description": "Mnemo — Persistent SQL-backed memory system. Auto-loads memories at session start, prompts to save at session end, before context compression, and when plans are accepted.",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "author": {
     "name": "RICO Technologies, LLC"
   }
