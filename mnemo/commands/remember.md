@@ -27,8 +27,12 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
      --topic "TOPIC" \
      --content "$_mnemo_content" \
      --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
-     --session-id "$CLAUDE_SESSION_ID"
+     --session-id "$CLAUDE_SESSION_ID" \
+     --visibility "VISIBILITY" \
+     --permission-group-id GROUP_ID
    ```
+
+   `--visibility` and `--permission-group-id` are optional. Visibility defaults to Global. For group-scoped memories, set `--visibility group` and provide the group ID (find it via `list-groups.sh`).
 
 4. Confirm to the user what was saved: the topic, tier, and a one-line summary. Keep it brief.
 

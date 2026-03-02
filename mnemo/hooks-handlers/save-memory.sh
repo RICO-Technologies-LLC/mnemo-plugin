@@ -11,7 +11,7 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 # Parse arguments
 TIER="" CATEGORY="" SCOPE="" TOPIC="" CONTENT="" SOURCE=""
 TASK_ID="" WORKING_DIR="" PROJECT_ID="" SESSION_ID=""
-VISIBILITY="" SUPERSEDES=""
+VISIBILITY="" PERMISSION_GROUP_ID="" SUPERSEDES=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -26,6 +26,7 @@ while [[ $# -gt 0 ]]; do
         --project-id)   PROJECT_ID="$2"; shift 2 ;;
         --session-id)   SESSION_ID="$2"; shift 2 ;;
         --visibility)   VISIBILITY="$2"; shift 2 ;;
+        --permission-group-id) PERMISSION_GROUP_ID="$2"; shift 2 ;;
         --supersedes)   SUPERSEDES="$2"; shift 2 ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
@@ -44,7 +45,7 @@ fi
 
 if mnemo_create_memory "$TIER" "$CATEGORY" "$SCOPE" "$TOPIC" "$CONTENT" \
     "$SOURCE" "$TASK_ID" "$WORKING_DIR" "$PROJECT_ID" "$SESSION_ID" \
-    "$VISIBILITY" "" "$SUPERSEDES"; then
+    "$VISIBILITY" "$PERMISSION_GROUP_ID" "$SUPERSEDES"; then
 
     echo "Memory saved."
 else
