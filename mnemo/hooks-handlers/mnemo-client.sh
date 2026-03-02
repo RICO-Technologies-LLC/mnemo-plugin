@@ -375,6 +375,10 @@ mnemo_submit_feedback() {
     _mnemo_request POST "/api/feedback" "$body"
 }
 
+mnemo_get_my_groups() {
+    _mnemo_request GET "/api/groups/mine"
+}
+
 mnemo_health() {
     # Health check — does not require auth
     local tmp_resp

@@ -95,6 +95,10 @@ case "$URL" in
             RESPONSE_BODY='{"id":1,"apiKey":"mock-generated-key-abc123","keyPrefix":"abcd1234","label":"test"}'
         fi
         ;;
+    */api/groups/mine)
+        HTTP_CODE="200"
+        RESPONSE_BODY='[{"id":1,"groupName":"Finance Team","ownerUserId":10},{"id":2,"groupName":"Engineering","ownerUserId":10}]'
+        ;;
     */api/memories/search*)
         HTTP_CODE="200"
         RESPONSE_BODY='[{"id":1,"topic":"Test Result","content":"Found via search","memoryTier":"Operational","scope":"global","category":"Fact"}]'
