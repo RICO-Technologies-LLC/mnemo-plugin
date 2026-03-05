@@ -11,7 +11,7 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 # Parse arguments
 TIER="" CATEGORY="" SCOPE="" TOPIC="" CONTENT="" SOURCE=""
 TASK_ID="" WORKING_DIR="" PROJECT_ID="" SESSION_ID=""
-VISIBILITY="" SUPERSEDES=""
+VISIBILITY="" PERMISSION_GROUP_ID="" SUPERSEDES=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -26,10 +26,16 @@ while [[ $# -gt 0 ]]; do
         --project-id)   PROJECT_ID="$2"; shift 2 ;;
         --session-id)   SESSION_ID="$2"; shift 2 ;;
         --visibility)   VISIBILITY="$2"; shift 2 ;;
+        --permission-group-id) PERMISSION_GROUP_ID="$2"; shift 2 ;;
         --supersedes)   SUPERSEDES="$2"; shift 2 ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
 done
+
+# Default working directory from session launch dir if not provided
+if [[ -z "$WORKING_DIR" ]]; then
+    WORKING_DIR="$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")"
+fi
 
 # Validate required fields
 if [[ -z "$TIER" || -z "$CATEGORY" || -z "$SCOPE" || -z "$TOPIC" || -z "$CONTENT" ]]; then
@@ -39,10 +45,10 @@ fi
 
 if mnemo_create_memory "$TIER" "$CATEGORY" "$SCOPE" "$TOPIC" "$CONTENT" \
     "$SOURCE" "$TASK_ID" "$WORKING_DIR" "$PROJECT_ID" "$SESSION_ID" \
-    "$VISIBILITY" "" "$SUPERSEDES"; then
+    "$VISIBILITY" "$PERMISSION_GROUP_ID" "$SUPERSEDES"; then
 
     echo "Memory saved."
 else
-    echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    _mnemo_format_error
     exit 1
 fi

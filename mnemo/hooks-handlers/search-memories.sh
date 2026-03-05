@@ -27,6 +27,6 @@ if mnemo_search_memories "$KEYWORDS" "$SCOPE"; then
         echo "$MNEMO_RESPONSE"
     fi
 else
-    echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    _mnemo_format_error
     exit 1
 fi

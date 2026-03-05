@@ -13,18 +13,26 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
    - **Topic**: A short title (3-8 words)
    - **Content**: The substantive detail. Be specific and actionable, not vague.
 
-3. Run the save script. Use the Bash tool:
+3. Run the save script. Use the Bash tool. **Important:** Use the heredoc pattern shown below to prevent bash from expanding `$`, backticks, or other special characters in the content:
 
    ```
+   _mnemo_content=$(cat <<'MNEMO_CONTENT'
+   CONTENT
+   MNEMO_CONTENT
+   )
    bash "${HOME}/.claude/mnemo/hooks-handlers/save-memory.sh" \
      --tier "TIER" \
      --category "CATEGORY" \
      --scope "SCOPE" \
      --topic "TOPIC" \
-     --content "CONTENT" \
-     --working-dir "$PWD" \
-     --session-id "$CLAUDE_SESSION_ID"
+     --content "$_mnemo_content" \
+     --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
+     --session-id "$CLAUDE_SESSION_ID" \
+     --visibility "VISIBILITY" \
+     --permission-group-id GROUP_ID
    ```
+
+   `--visibility` and `--permission-group-id` are optional. Visibility defaults to Global. For group-scoped memories, set `--visibility group` and provide the group ID (find it via `list-groups.sh`).
 
 4. Confirm to the user what was saved: the topic, tier, and a one-line summary. Keep it brief.
 

@@ -130,6 +130,24 @@ setup() {
     [[ "$output" == *"Memory saved."* ]]
 }
 
+@test "save-memory: accepts --permission-group-id parameter" {
+    run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Foundation --category Fact --scope global \
+        --topic "Group Note" --content "Shared with team" \
+        --visibility group --permission-group-id 42
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Memory saved."* ]]
+}
+
+@test "save-memory: permission-group-id is sent in API request body" {
+    bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
+        --tier Operational --category Decision --scope backend \
+        --topic "Group Decision" --content "Team choice" \
+        --visibility group --permission-group-id 7 2>&1
+    # Verify curl was called with the body containing permissionGroupID
+    grep -q "POST.*memories" "$TEST_TMPDIR/curl-log.txt"
+}
+
 @test "save-memory: does not output memory ID" {
     run bash "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" \
         --tier Foundation --category Fact --scope global \

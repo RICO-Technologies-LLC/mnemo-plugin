@@ -63,18 +63,27 @@ setup() {
     fi
 }
 
-@test "hooks.json command paths reference session-start.sh" {
-    grep -q 'session-start.sh' "$HOOKS_FILE"
+@test "hooks.json command paths reference session-init.sh" {
+    grep -q 'session-init.sh' "$HOOKS_FILE"
 }
 
-@test "hooks.json command paths reference stop-check.sh" {
-    grep -q 'stop-check.sh' "$HOOKS_FILE"
+@test "hooks.json command paths reference hook-guard.sh for stop-check" {
+    local stop_cmd
+    stop_cmd="$(grep -A5 '"Stop"' "$HOOKS_FILE" | grep '"command"')"
+    [[ "$stop_cmd" == *'hook-guard.sh'* ]]
+    [[ "$stop_cmd" == *'stop-check'* ]]
 }
 
-@test "hooks.json command paths reference precompact-check.sh" {
-    grep -q 'precompact-check.sh' "$HOOKS_FILE"
+@test "hooks.json command paths reference hook-guard.sh for precompact-check" {
+    local precompact_cmd
+    precompact_cmd="$(grep -A5 '"PreCompact"' "$HOOKS_FILE" | grep '"command"')"
+    [[ "$precompact_cmd" == *'hook-guard.sh'* ]]
+    [[ "$precompact_cmd" == *'precompact-check'* ]]
 }
 
-@test "hooks.json command paths reference plan-accepted-check.sh" {
-    grep -q 'plan-accepted-check.sh' "$HOOKS_FILE"
+@test "hooks.json command paths reference hook-guard.sh for plan-accepted-check" {
+    local posttool_cmd
+    posttool_cmd="$(grep -A10 '"PostToolUse"' "$HOOKS_FILE" | grep '"command"')"
+    [[ "$posttool_cmd" == *'hook-guard.sh'* ]]
+    [[ "$posttool_cmd" == *'plan-accepted-check'* ]]
 }

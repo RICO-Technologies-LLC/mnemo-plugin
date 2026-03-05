@@ -13,6 +13,14 @@ load '../helpers/test-helper'
     [[ -f "$PLUGIN_ROOT/hooks-handlers/session-start.sh" ]]
 }
 
+@test "hooks-handlers/session-init.sh exists" {
+    [[ -f "$PLUGIN_ROOT/hooks-handlers/session-init.sh" ]]
+}
+
+@test "hooks-handlers/hook-guard.sh exists" {
+    [[ -f "$PLUGIN_ROOT/hooks-handlers/hook-guard.sh" ]]
+}
+
 @test "hooks-handlers/save-memory.sh exists" {
     [[ -f "$PLUGIN_ROOT/hooks-handlers/save-memory.sh" ]]
 }
@@ -89,6 +97,10 @@ load '../helpers/test-helper'
 
 @test "setup/install.sh exists" {
     [[ -f "$PLUGIN_ROOT/setup/install.sh" ]]
+}
+
+@test "setup/install.ps1 exists" {
+    [[ -f "$PLUGIN_ROOT/setup/install.ps1" ]]
 }
 
 @test "setup/uninstall.sh exists" {

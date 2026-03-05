@@ -21,7 +21,7 @@ MNEMO_HTTP_CODE=""
 MNEMO_RESPONSE=""
 
 # Default API URL
-_MNEMO_DEFAULT_URL="https://mnemo-dffsh5b3b6gadpcu.westus3-01.azurewebsites.net"
+_MNEMO_DEFAULT_URL="https://mmryai.com"
 
 _mnemo_urlencode() {
     # URL-encode a string using sed (cross-platform, no curl trick)
@@ -161,6 +161,19 @@ _mnemo_request() {
     fi
 }
 
+_mnemo_format_error() {
+    # Format an API error for display. Handles 402 (credits exhausted) specially.
+    # Usage: _mnemo_format_error [context]
+    #   context: optional label like "save" or "search"
+    local context="${1:-request}"
+    if [[ "$MNEMO_HTTP_CODE" == "402" ]]; then
+        echo "Credits exhausted. Your Mnemo subscription has run out of API credits." >&2
+        echo "Visit https://mmryai.com or contact your admin to add more credits." >&2
+    else
+        echo "Error (HTTP ${MNEMO_HTTP_CODE}): ${MNEMO_RESPONSE}" >&2
+    fi
+}
+
 # ============================================================================
 # 5. JSON HELPERS
 # ============================================================================
@@ -173,6 +186,8 @@ _mnemo_json_escape() {
     s="${s//$'\n'/\\n}"     # newline
     s="${s//$'\r'/\\r}"     # carriage return
     s="${s//$'\t'/\\t}"     # tab
+    s="${s//$'\x08'/\\b}"   # backspace
+    s="${s//$'\x0c'/\\f}"   # form feed
     printf '%s' "$s"
 }
 
@@ -341,6 +356,27 @@ mnemo_register_session() {
 
 mnemo_get_active_sessions() {
     _mnemo_request GET "/api/sessions/active"
+}
+
+mnemo_submit_feedback() {
+    # Usage: mnemo_submit_feedback TYPE TITLE DESCRIPTION [COMPONENT] [REPRO_STEPS] [ENVIRONMENT]
+    local type="$1" title="$2" description="$3"
+    local component="${4:-}" repro_steps="${5:-}" environment="${6:-}"
+
+    local body
+    body="$(_mnemo_build_json \
+        "type" "$type" \
+        "title" "$title" \
+        "description" "$description" \
+        "component" "$component" \
+        "reproSteps" "$repro_steps" \
+        "environment" "$environment")"
+
+    _mnemo_request POST "/api/feedback" "$body"
+}
+
+mnemo_get_my_groups() {
+    _mnemo_request GET "/api/groups/mine"
 }
 
 mnemo_health() {

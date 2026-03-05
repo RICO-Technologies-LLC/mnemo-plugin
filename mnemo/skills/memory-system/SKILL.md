@@ -31,6 +31,7 @@ The plugin includes pre-built bash scripts for common memory operations. Each is
 | `deactivate-memory.sh` | Deactivate a memory |
 | `link-memories.sh` | Link two memories |
 | `search-memories.sh` | Search memories by keyword |
+| `list-groups.sh` | List your permission groups |
 
 All scripts are in `${CLAUDE_PLUGIN_ROOT}/hooks-handlers/`. See the relevant sections below for usage examples.
 
@@ -56,7 +57,7 @@ mnemo_get_active_sessions
 echo "$MNEMO_RESPONSE"
 ```
 
-Available functions: `mnemo_create_memory`, `mnemo_get_memories`, `mnemo_get_startup_memories`, `mnemo_get_memory_by_id`, `mnemo_search_memories`, `mnemo_deactivate_memory`, `mnemo_reinforce_memory`, `mnemo_create_link`, `mnemo_delete_link`, `mnemo_get_related`, `mnemo_register_session`, `mnemo_get_active_sessions`, `mnemo_health`.
+Available functions: `mnemo_create_memory`, `mnemo_get_memories`, `mnemo_get_startup_memories`, `mnemo_get_memory_by_id`, `mnemo_search_memories`, `mnemo_deactivate_memory`, `mnemo_reinforce_memory`, `mnemo_create_link`, `mnemo_delete_link`, `mnemo_get_related`, `mnemo_register_session`, `mnemo_get_active_sessions`, `mnemo_get_my_groups`, `mnemo_health`.
 
 After each call, check `$MNEMO_HTTP_CODE` and `$MNEMO_RESPONSE` for the result.
 
@@ -78,6 +79,7 @@ All operations go through the Mnemo REST API:
 | GET | `/api/memories/{id}/related` | Get related memories |
 | POST | `/api/sessions` | Register/update session |
 | GET | `/api/sessions/active` | List active sessions |
+| GET | `/api/groups/mine` | List your permission groups |
 
 ## Mid-Session Loading
 
@@ -117,7 +119,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/save-memory.sh" \
   --session-id "$CLAUDE_SESSION_ID"
 ```
 
-Optional parameters (`--task-id`, `--project-id`, `--visibility`, `--supersedes`) can be omitted — they default to empty/NULL. **Always include `--working-dir "$PWD"` and `--session-id "$CLAUDE_SESSION_ID"`.** Returns `NewMemoryID` on success.
+Optional parameters (`--task-id`, `--project-id`, `--visibility`, `--permission-group-id`, `--supersedes`) can be omitted — they default to empty/NULL. **Always include `--session-id "$CLAUDE_SESSION_ID"`.** `--working-dir` is optional — if omitted, it defaults to the session launch directory (persisted at session start). Returns `NewMemoryID` on success.
 
 ## When to Store a Memory
 Store a memory when any of the following happen:
@@ -288,9 +290,9 @@ Store enough that any Claude session can do a great job working with the team. D
 
 ## Working Directory
 
-**Always pass `--working-dir "$PWD"` when saving memories.** The API records it for both directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — you don't need to omit it to make a memory universal. Recording it simply tells future sessions where the memory was created.
+`--working-dir` is optional. If omitted, `save-memory.sh` reads the session launch directory from `${TMPDIR:-/tmp}/mnemo-session-dir` (written by `session-start.sh` at session startup). This ensures the recorded directory is always the project root where Claude Code was launched, not a transient subdirectory or worktree. Falls back to `$PWD` if the session dir file doesn't exist.
 
-**Important:** Always use `$PWD` — never hardcode a specific path. Each session may run from a different directory depending on the project.
+The API records the working directory for directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — recording it simply tells future sessions where the memory was created.
 
 **Examples:**
 ```bash
@@ -377,6 +379,34 @@ bash "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/save-memory.sh" \
 ```
 
 **Do not duplicate task details into memories.** The task system already tracks status, assignments, and timelines. Memories should capture the *knowledge gained* from doing the work, not the work itself.
+
+## Group Visibility
+
+Memories default to **Global** visibility (all users in the subscriber see them). You can also save **Private** (only the creator sees it) or **Group** (only members of a specific permission group see it).
+
+### Listing Your Groups
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/list-groups.sh"
+```
+
+This calls `GET /api/groups/mine` and shows group IDs and names.
+
+### Saving a Group-Scoped Memory
+
+1. Run `list-groups.sh` to find the group ID
+2. Save with `--visibility group --permission-group-id <ID>`:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/save-memory.sh" \
+  --tier "Operational" --category "Decision" --scope "backend" \
+  --topic "Team-Only Convention" \
+  --content "CONVENTION: Use feature flags for all new endpoints." \
+  --visibility "group" --permission-group-id 42 \
+  --working-dir "$PWD" --session-id "$CLAUDE_SESSION_ID"
+```
+
+The API validates that you are a member of the group. Non-members get a 403 error.
 
 ## How to Deactivate a Memory
 When something is no longer true:

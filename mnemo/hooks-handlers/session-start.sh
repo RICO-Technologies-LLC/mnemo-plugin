@@ -10,11 +10,14 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 
 WORK_DIR="$PWD"
 
+# Persist launch directory so later commands use the session root, not transient $PWD
+echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir"
+
 # Check if config is loaded — guide unconfigured users to run setup
 if [[ -z "${MNEMO_API_KEY:-}" ]]; then
-    SETUP_SCRIPT="${PLUGIN_ROOT}/setup/mnemo-setup.sh"
+    API_URL="https://mmryai.com"
     # shellcheck disable=SC2016
-    SETUP_MSG='MMRY AI is installed but needs to be set up. Guide the user through setup conversationally. Do NOT show them bash commands to run — you will handle everything.
+    SETUP_MSG='MMRY AI is installed but needs to be set up. Guide the user through setup conversationally. Do NOT show them bash commands to run or ask them to open a terminal. You handle everything.
 
 ## Setup Flow
 
@@ -27,33 +30,47 @@ if [[ -z "${MNEMO_API_KEY:-}" ]]; then
    - First name
    - Last name
    - Email address
-   - Password
+   - Password (must be 8+ characters with uppercase, lowercase, digit, and special character)
 
 4. **If joining an existing organization**, collect:
    - Email address (the one their admin created for them)
    - Password
 
-5. **Validate the password before running setup** (8-128 characters, must contain uppercase, lowercase, digit, and special character). If it does not meet requirements, tell them what is missing and ask them to pick a different one.
+5. **Validate the password** (8-128 characters, must contain at least one uppercase letter, one lowercase letter, one digit, and one special character). If it does not meet requirements, tell them what is missing and ask them to pick a different one.
 
-6. Run the setup script with all arguments pre-filled. Use the Bash tool:
+6. **Call the API directly** using the Bash tool with curl. Properly JSON-escape any special characters in user input.
 
-   For new org:
-   ```
-   bash "'"${SETUP_SCRIPT}"'" --name "ORG" --email "EMAIL" --first-name "FIRST" --last-name "LAST" --password "PASS"
-   ```
+   For new org (register):
+   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/register" -H "Content-Type: application/json" --data-raw '"'"'{"subscriberName":"ORG","firstName":"FIRST","lastName":"LAST","email":"EMAIL","password":"PASS"}'"'"'
 
-   For joining:
-   ```
-   bash "'"${SETUP_SCRIPT}"'" --join --email "EMAIL" --password "PASS"
-   ```
+   For joining (login):
+   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/login" -H "Content-Type: application/json" --data-raw '"'"'{"email":"EMAIL","password":"PASS"}'"'"'
 
-7. **If the script fails**, read the error output and help the user fix it:
-   - "Email already registered" — ask if they meant to join instead, or use a different email
-   - "Invalid email or password" — ask them to double-check credentials
-   - Connection errors — let them know the API may be temporarily unavailable
-   Then re-run with corrected values. Do not ask them to run commands manually.
+   The last line of output is the HTTP status code. Everything before it is the JSON response body.
 
-8. **On success**, tell the user: "You are all set. Restart Claude Code and your memories will start loading automatically." Mention they can type /mnemo:help anytime for a quick reference.'
+7. **Handle errors:**
+   - HTTP 409 on register: email already registered. Ask if they meant to join instead.
+   - HTTP 401 on login: invalid email or password. Ask them to double-check.
+   - HTTP 400: validation error. Show the details and help them fix it.
+   - HTTP 000: API temporarily unavailable. Try again in a moment.
+
+8. **On success** (201 for register, 200 for login), extract the token field from the JSON. Then generate an API key:
+   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/apikey" -H "Authorization: Bearer TOKEN" -H "Content-Type: application/json" --data-raw '"'"'{"label":"HOSTNAME"}'"'"'
+   Use the machine hostname for the label (run hostname to get it). Extract the apiKey field from the response.
+
+9. **Write the config file** using the Write tool to create ~/.claude/mnemo-config.json:
+   {"apiUrl":"'"${API_URL}"'","authMethod":"apikey","apiKey":"THE_API_KEY"}
+
+10. **Auto-approve permissions.** Read ~/.claude/settings.json and add these to permissions.allow if not already present:
+   Bash(*save-memory.sh*)
+   Bash(*reinforce-memory.sh*)
+   Bash(*deactivate-memory.sh*)
+   Bash(*link-memories.sh*)
+   Bash(*search-memories.sh*)
+   Bash(*mnemo-client.sh*)
+   Write the updated file back. Preserve all existing settings.
+
+11. Tell the user: "You are all set. Restart Claude Code and your memories will start loading automatically." Mention /mnemo:help for a quick reference.'
 
     # Escape for JSON output
     SETUP_MSG_ESCAPED="$(printf '%s' "$SETUP_MSG" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')"
@@ -67,6 +84,10 @@ MEM_FILE="${MNEMO_TMPDIR}/mnemo-memories.md"
 if ! mnemo_get_startup_memories "$WORK_DIR"; then
     if [[ "${MNEMO_HTTP_CODE:-}" == "403" ]]; then
         printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo trial has expired. Inform the user that their free trial has ended and they need to upgrade to continue using memory features."}}'
+        exit 0
+    fi
+    if [[ "${MNEMO_HTTP_CODE:-}" == "402" ]]; then
+        printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Mnemo credits exhausted. Inform the user their API credits have run out. Visit https://mmryai.com to add more credits or upgrade their plan."}}'
         exit 0
     fi
     escaped_err="$(echo "$MNEMO_RESPONSE" | sed "s/\"/'/g" | sed 's/\\/\\\\/g')"
