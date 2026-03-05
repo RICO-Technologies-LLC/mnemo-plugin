@@ -57,7 +57,7 @@ RESPONSE_BODY='{"error":"Unexpected request"}'
 
     # Per-URL override files: write HTTP_CODE to $TEST_TMPDIR/mock-override-<endpoint>-code
     # and RESPONSE_BODY to $TEST_TMPDIR/mock-override-<endpoint>-body
-    # Supported endpoint slugs: register, login, apikey
+    # Supported endpoint slugs: register, login, apikey, device, device-status
 
 case "$URL" in
     */api/health/db)
@@ -67,6 +67,24 @@ case "$URL" in
     */api/health)
         HTTP_CODE="200"
         RESPONSE_BODY='{"status":"Healthy"}'
+        ;;
+    */api/auth/device/*/status)
+        if [[ -f "${TEST_TMPDIR:-/tmp}/mock-override-device-status-code" ]]; then
+            HTTP_CODE="$(cat "${TEST_TMPDIR}/mock-override-device-status-code")"
+            RESPONSE_BODY="$(cat "${TEST_TMPDIR}/mock-override-device-status-body" 2>/dev/null || echo '')"
+        else
+            HTTP_CODE="200"
+            RESPONSE_BODY='{"status":"authorized","apiKey":"mock-device-auth-key-xyz789"}'
+        fi
+        ;;
+    */api/auth/device)
+        if [[ -f "${TEST_TMPDIR:-/tmp}/mock-override-device-code" ]]; then
+            HTTP_CODE="$(cat "${TEST_TMPDIR}/mock-override-device-code")"
+            RESPONSE_BODY="$(cat "${TEST_TMPDIR}/mock-override-device-body" 2>/dev/null || echo '')"
+        else
+            HTTP_CODE="200"
+            RESPONSE_BODY='{"deviceCode":"TESTCODE","verificationUrl":"https://mmryai.com/authorize","expiresIn":600,"interval":2}'
+        fi
         ;;
     */api/auth/register)
         if [[ -f "${TEST_TMPDIR:-/tmp}/mock-override-register-code" ]]; then

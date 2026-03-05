@@ -2,11 +2,12 @@
 # mnemo-setup.sh — Interactive Mnemo plugin setup
 # Two modes:
 #   Register: Creates a new organization (subscriber) and admin account
-#   Join:     Joins an existing organization using credentials from your admin
+#   Join:     Joins an existing organization via browser authorization
 #
 # Usage:
 #   bash mnemo-setup.sh
 #   bash mnemo-setup.sh --name "Acme Corp" --email admin@acme.com --first-name John --last-name Doe --password "Pass1234!"
+#   bash mnemo-setup.sh --join
 #   bash mnemo-setup.sh --join --email user@acme.com --password "Pass1234!"
 #   bash mnemo-setup.sh --api-url http://localhost:5291
 
@@ -37,7 +38,8 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "Usage:"
             echo "  Register new org:  bash mnemo-setup.sh [--name NAME] [--email EMAIL] [--first-name F] [--last-name L] [--password PASS]"
-            echo "  Join existing org: bash mnemo-setup.sh --join [--email EMAIL] [--password PASS]"
+            echo "  Join existing org: bash mnemo-setup.sh --join"
+            echo "  Join (CI/automation): bash mnemo-setup.sh --join --email EMAIL --password PASS"
             echo "  Options:           [--api-url URL]"
             exit 0 ;;
         *) echo "Unknown argument: $1"; exit 1 ;;
@@ -55,13 +57,23 @@ if command -v jq &>/dev/null; then
     HAS_JQ=true
 fi
 
-# Helper: extract JSON value (jq or regex fallback)
+# Helper: extract JSON string value (jq or regex fallback)
 json_value() {
     local json="$1" key="$2"
     if $HAS_JQ; then
         echo "$json" | jq -r ".${key} // empty"
     else
         echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"${key}\"[[:space:]]*:[[:space:]]*\"//" | sed 's/"$//' | head -1
+    fi
+}
+
+# Helper: extract JSON numeric value (jq or regex fallback)
+json_number() {
+    local json="$1" key="$2"
+    if $HAS_JQ; then
+        echo "$json" | jq -r ".${key} // empty"
+    else
+        echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*[0-9]*" | grep -o '[0-9]*$' | head -1
     fi
 }
 
@@ -73,6 +85,20 @@ json_escape() {
     s="${s//$'\n'/\\n}"  # newline → \n
     s="${s//$'\r'/}"     # strip CR
     printf '%s' "$s"
+}
+
+# Helper: open a URL in the user's default browser
+open_browser() {
+    local url="$1"
+    case "$(uname -s)" in
+        Darwin*)              open "$url" 2>/dev/null ;;
+        Linux*)               xdg-open "$url" 2>/dev/null ;;
+        MINGW*|MSYS*|CYGWIN*) cmd.exe /c start "" "$url" 2>/dev/null ;;
+    esac
+    # Always print the URL as fallback (browser open may fail silently)
+    if [[ $? -ne 0 ]]; then
+        echo "  Open this URL in your browser: $url"
+    fi
 }
 
 echo ""
@@ -101,59 +127,168 @@ fi
 
 # --- JOIN MODE ---
 if [[ "$MODE" == "join" ]]; then
-    echo "Joining an existing organization..."
-    echo "Use the email and password your admin created for you."
-    echo ""
 
-    if [[ -z "$EMAIL" ]]; then
-        printf "Email: "
-        read -r EMAIL
-    fi
-    if [[ -z "$EMAIL" ]]; then
-        echo "Error: Email is required."
-        exit 1
-    fi
+    if [[ -n "$EMAIL" && -n "$PASSWORD" ]]; then
+        # --- Credential fallback (CI/automation) ---
+        echo "Joining an existing organization..."
+        echo ""
 
-    if [[ -z "$PASSWORD" ]]; then
-        printf "Password: "
-        if [[ -t 0 ]]; then
-            read -rs PASSWORD
+        echo "Logging in..."
+        LOGIN_BODY="{\"email\":\"$(json_escape "$EMAIL")\",\"password\":\"$(json_escape "$PASSWORD")\"}"
+
+        LOGIN_TMP="$(mktemp)"
+        LOGIN_CODE=$(curl -s -o "$LOGIN_TMP" -w '%{http_code}' \
+            --connect-timeout 10 --max-time 25 \
+            -X POST "${API_URL}/api/auth/login" \
+            -H "Content-Type: application/json" \
+            -d "$LOGIN_BODY")
+
+        LOGIN_RESP="$(cat "$LOGIN_TMP")"
+        rm -f "$LOGIN_TMP"
+
+        if [[ "$LOGIN_CODE" == "401" ]]; then
+            echo "Error: Invalid email or password."
+            exit 1
+        elif [[ "$LOGIN_CODE" != "200" ]]; then
+            echo "Error: Login failed (HTTP ${LOGIN_CODE})."
+            echo "$LOGIN_RESP"
+            exit 1
+        fi
+
+        echo "  Logged in successfully."
+        TOKEN="$(json_value "$LOGIN_RESP" "token")"
+
+        if [[ -z "$TOKEN" ]]; then
+            echo "Error: No token in response."
+            exit 1
+        fi
+
+        echo "Generating API key..."
+        MACHINE_LABEL="$(hostname 2>/dev/null || echo "unknown")"
+        KEY_BODY="{\"label\":\"${MACHINE_LABEL}\"}"
+
+        KEY_TMP="$(mktemp)"
+        KEY_CODE=$(curl -s -o "$KEY_TMP" -w '%{http_code}' \
+            --connect-timeout 10 --max-time 25 \
+            -X POST "${API_URL}/api/auth/apikey" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$KEY_BODY")
+
+        KEY_RESP="$(cat "$KEY_TMP")"
+        rm -f "$KEY_TMP"
+
+        if [[ "$KEY_CODE" != "201" ]]; then
+            echo "Error: API key generation failed (HTTP ${KEY_CODE})."
+            echo "$KEY_RESP"
+            exit 1
+        fi
+
+        API_KEY="$(json_value "$KEY_RESP" "apiKey")"
+        if [[ -z "$API_KEY" ]]; then
+            echo "Error: No API key in response."
+            exit 1
+        fi
+        echo "  API key generated."
+
+    else
+        # --- Device authorization flow (default interactive) ---
+        if [[ -n "$EMAIL" || -n "$PASSWORD" ]]; then
+            echo "Note: Both --email and --password are required for credential mode. Using browser authorization."
             echo ""
-        else
-            read -r PASSWORD
+        fi
+
+        echo "Joining an existing organization..."
+        echo ""
+
+        # Step 1: Request device code
+        echo "Requesting authorization..."
+        DEVICE_TMP="$(mktemp)"
+        DEVICE_CODE_HTTP=$(curl -s -o "$DEVICE_TMP" -w '%{http_code}' \
+            --connect-timeout 10 --max-time 25 \
+            -X POST "${API_URL}/api/auth/device")
+
+        DEVICE_RESP="$(cat "$DEVICE_TMP")"
+        rm -f "$DEVICE_TMP"
+
+        if [[ "$DEVICE_CODE_HTTP" != "200" ]]; then
+            echo "Error: Could not start device authorization (HTTP ${DEVICE_CODE_HTTP})."
+            echo "$DEVICE_RESP"
+            exit 1
+        fi
+
+        DEVICE_CODE="$(json_value "$DEVICE_RESP" "deviceCode")"
+        VERIFICATION_URL="$(json_value "$DEVICE_RESP" "verificationUrl")"
+        EXPIRES_IN="$(json_number "$DEVICE_RESP" "expiresIn")"
+        POLL_INTERVAL="$(json_number "$DEVICE_RESP" "interval")"
+
+        # Defaults if server doesn't return them
+        EXPIRES_IN="${EXPIRES_IN:-600}"
+        POLL_INTERVAL="${POLL_INTERVAL:-2}"
+
+        if [[ -z "$DEVICE_CODE" || -z "$VERIFICATION_URL" ]]; then
+            echo "Error: Invalid device authorization response."
+            exit 1
+        fi
+
+        # Step 2: Open browser
+        AUTHORIZE_URL="${VERIFICATION_URL}?code=${DEVICE_CODE}"
+        echo ""
+        echo "Opening your browser to authorize this device..."
+        echo "  ${AUTHORIZE_URL}"
+        echo ""
+        open_browser "$AUTHORIZE_URL"
+        echo "Waiting for authorization (expires in $((EXPIRES_IN / 60)) minutes)..."
+
+        # Step 3: Poll for authorization
+        ELAPSED=0
+        while (( ELAPSED < EXPIRES_IN )); do
+            sleep "$POLL_INTERVAL"
+            ELAPSED=$(( ELAPSED + POLL_INTERVAL ))
+
+            STATUS_TMP="$(mktemp)"
+            STATUS_CODE=$(curl -s -o "$STATUS_TMP" -w '%{http_code}' \
+                --connect-timeout 10 --max-time 15 \
+                "${API_URL}/api/auth/device/${DEVICE_CODE}/status")
+
+            STATUS_RESP="$(cat "$STATUS_TMP")"
+            rm -f "$STATUS_TMP"
+
+            if [[ "$STATUS_CODE" == "429" ]]; then
+                # Rate limited - back off
+                sleep "$POLL_INTERVAL"
+                ELAPSED=$(( ELAPSED + POLL_INTERVAL ))
+                continue
+            fi
+
+            if [[ "$STATUS_CODE" != "200" ]]; then
+                echo "Error: Status check failed (HTTP ${STATUS_CODE})."
+                echo "$STATUS_RESP"
+                exit 1
+            fi
+
+            DEVICE_STATUS="$(json_value "$STATUS_RESP" "status")"
+
+            if [[ "$DEVICE_STATUS" == "authorized" ]]; then
+                API_KEY="$(json_value "$STATUS_RESP" "apiKey")"
+                if [[ -z "$API_KEY" ]]; then
+                    echo "Error: Authorization succeeded but no API key returned."
+                    exit 1
+                fi
+                echo "  Authorized!"
+                break
+            elif [[ "$DEVICE_STATUS" == "expired" ]]; then
+                echo "Error: Device code expired. Please run setup again."
+                exit 1
+            fi
+            # status == "pending" - keep polling
+        done
+
+        if (( ELAPSED >= EXPIRES_IN )) && [[ -z "${API_KEY:-}" ]]; then
+            echo "Error: Authorization timed out. Please run setup again."
+            exit 1
         fi
     fi
-    if [[ -z "$PASSWORD" ]]; then
-        echo "Error: Password is required."
-        exit 1
-    fi
-
-    # Step 1: Login
-    echo "Logging in..."
-
-    LOGIN_BODY="{\"email\":\"$(json_escape "$EMAIL")\",\"password\":\"$(json_escape "$PASSWORD")\"}"
-
-    LOGIN_TMP="$(mktemp)"
-    LOGIN_CODE=$(curl -s -o "$LOGIN_TMP" -w '%{http_code}' \
-        --connect-timeout 10 --max-time 25 \
-        -X POST "${API_URL}/api/auth/login" \
-        -H "Content-Type: application/json" \
-        -d "$LOGIN_BODY")
-
-    LOGIN_RESP="$(cat "$LOGIN_TMP")"
-    rm -f "$LOGIN_TMP"
-
-    if [[ "$LOGIN_CODE" == "401" ]]; then
-        echo "Error: Invalid email or password."
-        exit 1
-    elif [[ "$LOGIN_CODE" != "200" ]]; then
-        echo "Error: Login failed (HTTP ${LOGIN_CODE})."
-        echo "$LOGIN_RESP"
-        exit 1
-    fi
-
-    echo "  Logged in successfully."
-    TOKEN="$(json_value "$LOGIN_RESP" "token")"
 
 # --- REGISTER MODE ---
 else
@@ -214,7 +349,6 @@ else
     echo ""
     echo "Registering with ${API_URL}..."
 
-    # Step 1: Register
     REGISTER_BODY="{\"subscriberName\":\"$(json_escape "$SUBSCRIBER_NAME")\",\"email\":\"$(json_escape "$EMAIL")\",\"password\":\"$(json_escape "$PASSWORD")\",\"firstName\":\"$(json_escape "$FIRST_NAME")\",\"lastName\":\"$(json_escape "$LAST_NAME")\"}"
 
     REG_TMP="$(mktemp)"
@@ -242,46 +376,45 @@ else
 
     echo "  Registered successfully."
     TOKEN="$(json_value "$REG_RESP" "token")"
+
+    if [[ -z "$TOKEN" ]]; then
+        echo "Error: No token in response."
+        exit 1
+    fi
+
+    # Generate API key
+    echo "Generating API key..."
+    MACHINE_LABEL="$(hostname 2>/dev/null || echo "unknown")"
+    KEY_BODY="{\"label\":\"${MACHINE_LABEL}\"}"
+
+    KEY_TMP="$(mktemp)"
+    KEY_CODE=$(curl -s -o "$KEY_TMP" -w '%{http_code}' \
+        --connect-timeout 10 --max-time 25 \
+        -X POST "${API_URL}/api/auth/apikey" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$KEY_BODY")
+
+    KEY_RESP="$(cat "$KEY_TMP")"
+    rm -f "$KEY_TMP"
+
+    if [[ "$KEY_CODE" != "201" ]]; then
+        echo "Error: API key generation failed (HTTP ${KEY_CODE})."
+        echo "$KEY_RESP"
+        exit 1
+    fi
+
+    API_KEY="$(json_value "$KEY_RESP" "apiKey")"
+    if [[ -z "$API_KEY" ]]; then
+        echo "Error: No API key in response."
+        exit 1
+    fi
+    echo "  API key generated."
 fi
 
-# Common: extract token
-if [[ -z "$TOKEN" ]]; then
-    echo "Error: No token in response."
-    exit 1
-fi
+# --- Common: Write config and configure plugin ---
 
-# Step 2: Generate API key (labeled with hostname for multi-machine identification)
-echo "Generating API key..."
-
-MACHINE_LABEL="$(hostname 2>/dev/null || echo "unknown")"
-KEY_BODY="{\"label\":\"${MACHINE_LABEL}\"}"
-
-KEY_TMP="$(mktemp)"
-KEY_CODE=$(curl -s -o "$KEY_TMP" -w '%{http_code}' \
-    --connect-timeout 10 --max-time 25 \
-    -X POST "${API_URL}/api/auth/apikey" \
-    -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d "$KEY_BODY")
-
-KEY_RESP="$(cat "$KEY_TMP")"
-rm -f "$KEY_TMP"
-
-if [[ "$KEY_CODE" != "201" ]]; then
-    echo "Error: API key generation failed (HTTP ${KEY_CODE})."
-    echo "$KEY_RESP"
-    exit 1
-fi
-
-API_KEY="$(json_value "$KEY_RESP" "apiKey")"
-if [[ -z "$API_KEY" ]]; then
-    echo "Error: No API key in response."
-    exit 1
-fi
-
-echo "  API key generated."
-
-# Step 3: Write config file
+# Write config file
 CONFIG_DIR="${HOME}/.claude"
 CONFIG_FILE="${CONFIG_DIR}/mnemo-config.json"
 
@@ -305,7 +438,7 @@ fi
 
 echo "  Config written to ${CONFIG_FILE}"
 
-# Step 4: Auto-approve Mnemo scripts in Claude Code settings
+# Auto-approve Mnemo scripts in Claude Code settings
 SETTINGS_FILE="${HOME}/.claude/settings.json"
 MNEMO_PERMISSIONS=(
     "Bash(*save-memory.sh*)"
@@ -403,7 +536,7 @@ PYEOF
     fi
 fi
 
-# Step 5: Install plugin (skip for marketplace/stable installs — already handled by Claude Code)
+# Install plugin (skip for marketplace/stable installs — already handled by Claude Code)
 SCRIPT_DIR_RESOLVED="$(cd "$SCRIPT_DIR" && pwd)"
 if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* || "$SCRIPT_DIR_RESOLVED" == *"/.claude/mnemo/"* ]]; then
     echo "  Plugin already installed via marketplace."
