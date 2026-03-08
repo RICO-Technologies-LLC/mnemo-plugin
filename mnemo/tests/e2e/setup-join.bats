@@ -286,13 +286,12 @@ _mock_endpoint() {
     [[ "$output" == *"API key generation failed"* ]]
 }
 
-@test "join: does NOT show first-session guidance (join users are not new orgs)" {
+@test "join: does NOT show first-session guidance" {
     run bash "$SETUP_SCRIPT" \
         --join \
         --email "user@testcorp.com" \
         --password "SecurePass1!" \
         --api-url "http://localhost:5291"
-    # The "first session" onboarding message is only for register mode
     [[ "$output" != *"first session"* ]]
 }
 
@@ -343,6 +342,43 @@ _mock_endpoint() {
         --api-url "http://localhost:5291" 2>&1
 
     [[ -f "$HOME/.claude/mnemo-config.json" ]]
+}
+
+@test "setup: device auth works without --join flag" {
+    run bash "$SETUP_SCRIPT" \
+        --api-url "http://localhost:5291"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Authorized!"* ]]
+    [[ "$output" == *"You're all set"* ]]
+    grep -q 'POST.*auth/device' "$TEST_TMPDIR/curl-log.txt"
+}
+
+@test "setup: --help does not mention register or organization creation" {
+    run bash "$SETUP_SCRIPT" --help
+    [[ "$status" -eq 0 ]]
+    [[ "$output" != *"Register"* ]]
+    [[ "$output" != *"new org"* ]]
+    [[ "$output" != *"--name"* ]]
+    [[ "$output" != *"--first-name"* ]]
+    [[ "$output" != *"--last-name"* ]]
+}
+
+@test "setup: device auth times out when server always returns pending" {
+    # Return a short expiresIn (4 seconds) with interval of 2 so it loops twice then times out
+    _mock_endpoint "device" "200" '{"deviceCode":"TIMEOUT-TEST","verificationUrl":"https://mmryai.com/authorize","expiresIn":4,"interval":2}'
+    _mock_endpoint "device-status" "200" '{"status":"pending"}'
+    run bash "$SETUP_SCRIPT" \
+        --api-url "http://localhost:5291"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"Authorization timed out"* ]]
+}
+
+@test "setup: device auth fails when authorized but no API key returned" {
+    _mock_endpoint "device-status" "200" '{"status":"authorized"}'
+    run bash "$SETUP_SCRIPT" \
+        --api-url "http://localhost:5291"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"Authorization succeeded but no API key returned"* ]]
 }
 
 @test "join: re-running setup overwrites previous config" {

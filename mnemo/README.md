@@ -45,11 +45,11 @@ Then run `setup/mnemo-setup.sh` to create your account and API key.
 
 ## Setup
 
-When you start Claude Code with the plugin installed but not configured, Claude will automatically walk you through setup. It asks whether you're creating a new organization or joining an existing one, collects your details conversationally, and handles everything.
+When you start Claude Code with the plugin installed but not configured, setup runs automatically. It opens your browser so you can log in or create an account on mmryai.com, then configures everything.
 
 You can also run `/mnemo:setup` at any time to reconfigure or if the automatic prompt didn't trigger.
 
-Restart Claude Code after setup completes. Your first session will guide you through creating your initial memories.
+Restart Claude Code after setup completes.
 
 ## Uninstall
 

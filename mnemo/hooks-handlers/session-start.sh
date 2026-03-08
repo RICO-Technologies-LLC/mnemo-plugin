@@ -17,60 +17,21 @@ echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir"
 if [[ -z "${MNEMO_API_KEY:-}" ]]; then
     API_URL="https://mmryai.com"
     # shellcheck disable=SC2016
-    SETUP_MSG='MMRY AI is installed but needs to be set up. Guide the user through setup conversationally. Do NOT show them bash commands to run or ask them to open a terminal. You handle everything.
+    SETUP_MSG='MMRY AI is installed but needs to be set up. Run the setup script to authenticate via the browser.
 
-## Setup Flow
+## Setup
 
-1. Welcome the user to MMRY AI (the persistent memory system).
+Run this command using the Bash tool:
 
-2. Ask: "Are you creating a new organization, or joining one that already exists?"
+bash ~/.claude/mnemo/setup/mnemo-setup.sh
 
-3. **If creating a new organization**, collect these fields one at a time in natural conversation:
-   - Organization name (e.g., their company or team name)
-   - First name
-   - Last name
-   - Email address
-   - Password (must be 8+ characters with uppercase, lowercase, digit, and special character)
+This will open a browser window where the user can log in or create an account on mmryai.com. Once they authorize, the script writes the config file and permissions automatically.
 
-4. **If joining an existing organization**, collect:
-   - Email address (the one their admin created for them)
-   - Password
+If the browser does not open, the script prints a URL the user can copy and paste.
 
-5. **Validate the password** (8-128 characters, must contain at least one uppercase letter, one lowercase letter, one digit, and one special character). If it does not meet requirements, tell them what is missing and ask them to pick a different one.
+After setup completes, tell the user: "You are all set. Restart Claude Code and your memories will start loading automatically." Mention /mnemo:help for a quick reference.
 
-6. **Call the API directly** using the Bash tool with curl. Properly JSON-escape any special characters in user input.
-
-   For new org (register):
-   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/register" -H "Content-Type: application/json" --data-raw '"'"'{"subscriberName":"ORG","firstName":"FIRST","lastName":"LAST","email":"EMAIL","password":"PASS"}'"'"'
-
-   For joining (login):
-   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/login" -H "Content-Type: application/json" --data-raw '"'"'{"email":"EMAIL","password":"PASS"}'"'"'
-
-   The last line of output is the HTTP status code. Everything before it is the JSON response body.
-
-7. **Handle errors:**
-   - HTTP 409 on register: email already registered. Ask if they meant to join instead.
-   - HTTP 401 on login: invalid email or password. Ask them to double-check.
-   - HTTP 400: validation error. Show the details and help them fix it.
-   - HTTP 000: API temporarily unavailable. Try again in a moment.
-
-8. **On success** (201 for register, 200 for login), extract the token field from the JSON. Then generate an API key:
-   curl -s -w '"'"'\n%{http_code}'"'"' -X POST "'"${API_URL}"'/api/auth/apikey" -H "Authorization: Bearer TOKEN" -H "Content-Type: application/json" --data-raw '"'"'{"label":"HOSTNAME"}'"'"'
-   Use the machine hostname for the label (run hostname to get it). Extract the apiKey field from the response.
-
-9. **Write the config file** using the Write tool to create ~/.claude/mnemo-config.json:
-   {"apiUrl":"'"${API_URL}"'","authMethod":"apikey","apiKey":"THE_API_KEY"}
-
-10. **Auto-approve permissions.** Read ~/.claude/settings.json and add these to permissions.allow if not already present:
-   Bash(*save-memory.sh*)
-   Bash(*reinforce-memory.sh*)
-   Bash(*deactivate-memory.sh*)
-   Bash(*link-memories.sh*)
-   Bash(*search-memories.sh*)
-   Bash(*mnemo-client.sh*)
-   Write the updated file back. Preserve all existing settings.
-
-11. Tell the user: "You are all set. Restart Claude Code and your memories will start loading automatically." Mention /mnemo:help for a quick reference.'
+If the user does not have an account yet, direct them to https://mmryai.com to sign up first, then run setup again.'
 
     # Escape for JSON output
     SETUP_MSG_ESCAPED="$(printf '%s' "$SETUP_MSG" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')"
