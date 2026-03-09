@@ -76,7 +76,7 @@ Launch Claude Code:
 claude
 ```
 
-Claude will detect that MMRY AI is installed but not configured, and walk you through setup automatically. It will ask whether you're creating a new organization or joining an existing one, collect your details, and handle the rest.
+Claude will detect that MMRY AI is installed but not configured and run setup automatically. It opens your browser so you can log in or create an account on mmryai.com, then configures everything.
 
 If the automatic prompt doesn't appear, type `/mnemo:setup` to start manually.
 
