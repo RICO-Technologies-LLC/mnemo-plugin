@@ -81,6 +81,13 @@ if (-not $settings.enabledPlugins.PSObject.Properties[$pluginName]) {
     $settings.enabledPlugins | Add-Member -NotePropertyName $pluginName -NotePropertyValue $true
 }
 
+# Disable built-in auto memory (Mnemo replaces it)
+if ($settings.PSObject.Properties['autoMemoryEnabled']) {
+    $settings.autoMemoryEnabled = $false
+} else {
+    $settings | Add-Member -NotePropertyName 'autoMemoryEnabled' -NotePropertyValue $false
+}
+
 # Write settings back
 $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
 

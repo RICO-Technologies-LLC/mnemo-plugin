@@ -42,6 +42,9 @@ settings="$(echo "$settings" | jq --arg name "$PLUGIN_NAME" '
     .enabledPlugins[$name] //= true
 ')"
 
+# Disable built-in auto memory (Mnemo replaces it)
+settings="$(echo "$settings" | jq '.autoMemoryEnabled = false')"
+
 echo "$settings" | jq '.' > "$SETTINGS_PATH"
 
 echo "Mnemo memory plugin installed!"
