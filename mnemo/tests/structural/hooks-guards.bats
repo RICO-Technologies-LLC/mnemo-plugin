@@ -38,9 +38,18 @@ load '../helpers/test-helper'
 
 # ── hooks.json has no bash -c (Windows quoting fix) ──
 
-@test "hooks.json contains no bash -c commands" {
+@test "hooks.json guard hooks use bash -c with existence check" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    ! grep -q 'bash -c' "$hooks_file"
+    # Guard-based hooks (Stop, PreCompact, PostToolUse) intentionally use bash -c
+    # to check if the stable copy exists before running
+    local guard_cmds
+    guard_cmds="$(grep '"command"' "$hooks_file" | grep 'hook-guard.sh')"
+    [[ -n "$guard_cmds" ]]
+    echo "$guard_cmds" | while IFS= read -r line; do
+        [[ "$line" == *'bash -c'* ]]
+        [[ "$line" == *'[ -f'* ]]
+        [[ "$line" == *'|| true'* ]]
+    done
 }
 
 # ── hook-guard.sh behavior ──

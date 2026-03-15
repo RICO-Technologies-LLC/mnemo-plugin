@@ -52,6 +52,12 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "    $settings.PSObject.Properties.Remove('extraKnownMarketplaces')" ^
   "  }" ^
   "" ^
+  "  # Re-enable built-in auto memory" ^
+  "  if ($settings.PSObject.Properties['autoMemoryEnabled']) {" ^
+  "    $settings.PSObject.Properties.Remove('autoMemoryEnabled');" ^
+  "    $changed = $true" ^
+  "  }" ^
+  "" ^
   "  # Remove Mnemo permissions" ^
   "  if ($settings.PSObject.Properties['permissions'] -and $settings.permissions.PSObject.Properties['allow']) {" ^
   "    $settings.permissions.allow = @($settings.permissions.allow | Where-Object { $_ -notin $mnemoPerms });" ^

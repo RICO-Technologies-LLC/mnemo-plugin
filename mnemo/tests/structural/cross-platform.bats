@@ -70,9 +70,26 @@ load '../helpers/test-helper'
 
 # ── hooks.json Windows compatibility ──
 
-@test "hooks.json contains no bash -c (Windows cmd.exe safe)" {
+@test "hooks.json SessionStart uses CLAUDE_PLUGIN_ROOT (no bash -c)" {
     local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    ! grep -q 'bash -c' "$hooks_file"
+    local session_cmd
+    session_cmd="$(grep -A10 '"SessionStart"' "$hooks_file" | grep '"command"')"
+    ! echo "$session_cmd" | grep -q 'bash -c'
+    [[ "$session_cmd" == *'CLAUDE_PLUGIN_ROOT'* ]]
+}
+
+@test "hooks.json guard-based hooks use existence check pattern" {
+    local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
+    # Stop, PreCompact, PostToolUse use bash -c with guard pattern:
+    #   bash -c "[ -f ... ] && bash ... || true"
+    # This is intentional — these hooks must be resilient when the stable copy isn't installed yet
+    for hook in Stop PreCompact PostToolUse; do
+        local cmd
+        cmd="$(grep -A10 "\"$hook\"" "$hooks_file" | grep '"command"')"
+        [[ "$cmd" == *'bash -c'* ]]
+        [[ "$cmd" == *'hook-guard.sh'* ]]
+        [[ "$cmd" == *'|| true'* ]]
+    done
 }
 
 @test "hooks.json contains no single quotes in hook commands" {
@@ -81,14 +98,6 @@ load '../helpers/test-helper'
     local commands
     commands="$(grep '"command"' "$hooks_file")"
     ! echo "$commands" | grep -q "'"
-}
-
-@test "hooks.json contains no && or || shell operators in hook commands" {
-    local hooks_file="$PLUGIN_ROOT/hooks/hooks.json"
-    local commands
-    commands="$(grep '"command"' "$hooks_file")"
-    ! echo "$commands" | grep -q '&&'
-    ! echo "$commands" | grep -q '||'
 }
 
 @test "SessionStart hook uses CLAUDE_PLUGIN_ROOT variable" {

@@ -63,6 +63,9 @@ else
             if .extraKnownMarketplaces and (.extraKnownMarketplaces | length) == 0 then del(.extraKnownMarketplaces) else . end
         ')"
 
+        # Re-enable built-in auto memory
+        settings="$(echo "$settings" | jq 'del(.autoMemoryEnabled)')"
+
         # Remove Mnemo permissions
         for perm in "${MNEMO_PERMISSIONS[@]}"; do
             settings="$(echo "$settings" | jq --arg p "$perm" '
@@ -112,6 +115,7 @@ if "extraKnownMarketplaces" in data:
         data["extraKnownMarketplaces"].pop(name, None)
     if not data["extraKnownMarketplaces"]:
         del data["extraKnownMarketplaces"]
+data.pop("autoMemoryEnabled", None)
 if "permissions" in data and "allow" in data["permissions"]:
     data["permissions"]["allow"] = [p for p in data["permissions"]["allow"] if p not in mnemo_perms]
     if not data["permissions"]["allow"]:
