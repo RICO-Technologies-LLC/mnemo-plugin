@@ -82,12 +82,13 @@ open_browser() {
     case "$(uname -s)" in
         Darwin*)              open "$url" 2>/dev/null ;;
         Linux*)               xdg-open "$url" 2>/dev/null ;;
-        MINGW*|MSYS*|CYGWIN*) cmd.exe /c start "" "$url" 2>/dev/null ;;
+        MINGW*|MSYS*|CYGWIN*)
+            cmd.exe /c start "" "$url" 2>/dev/null \
+                || rundll32.exe url.dll,FileProtocolHandler "$url" 2>/dev/null \
+                || true
+            ;;
     esac
-    # Always print the URL as fallback (browser open may fail silently)
-    if [[ $? -ne 0 ]]; then
-        echo "  Open this URL in your browser: $url"
-    fi
+    echo "  If your browser didn't open, copy and paste this URL: $url"
 }
 
 echo ""
