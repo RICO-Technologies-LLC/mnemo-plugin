@@ -379,6 +379,28 @@ mnemo_get_my_groups() {
     _mnemo_request GET "/api/groups/mine"
 }
 
+mnemo_process_context() {
+    # Send session context to the server-side AI layer for processing.
+    # Usage: mnemo_process_context "context" "hookType" ["workingDir" "sessionId" "projectId" "taskId"]
+    local context="$1"
+    local hook_type="$2"
+    local working_dir="${3:-}"
+    local session_id="${4:-}"
+    local project_id="${5:-}"
+    local task_id="${6:-}"
+
+    local body
+    body=$(_mnemo_build_json \
+        "context"          "$context" \
+        "hookType"         "$hook_type" \
+        "workingDirectory" "$working_dir" \
+        "sessionId"        "$session_id" \
+        "projectId"        "$project_id" \
+        "taskId"           "$task_id")
+
+    _mnemo_request POST "/api/memories/process" "$body"
+}
+
 mnemo_health() {
     # Health check — does not require auth
     local tmp_resp
