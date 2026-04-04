@@ -6,6 +6,10 @@ set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
+
+# Self-update check — runs before anything else, debounced to once per hour
+bash "${PLUGIN_ROOT}/hooks-handlers/self-update.sh" 2>/dev/null || true
+
 source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 
 WORK_DIR="$PWD"
