@@ -8,7 +8,7 @@
       "name": "mnemo",
       "source": "./mnemo",
       "description": "Persistent memory system for Claude Code. Auto-loads, auto-saves, auto-reinforces.",
-      "version": "1.2.4",
+      "version": "1.2.5",
       "category": "productivity"
     }
   ]
