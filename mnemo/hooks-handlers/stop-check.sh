@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# stop-check.sh — Stop hook: prompts to save important memories.
+# stop-check.sh — Stop hook: sends session context to Mnemo API for memory processing.
 # Uses temp marker file to debounce (120-second window).
 
 set -euo pipefail
@@ -25,7 +25,7 @@ fi
 
 touch "$MARKER"
 
-CONTEXT='REQUIRED: Before this session ends, review the conversation for decisions, conventions, issues, bugs, or facts worth persisting. For each one, call save-memory.sh:\n\nbash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/save-memory.sh\" \\\n  --tier \"<tier>\" --category \"<category>\" --scope \"<scope>\" \\\n  --topic \"<short title>\" --content \"<declarative summary>\" \\\n  --source \"claude\" --working-dir \"$PWD\" --session-id \"$CLAUDE_SESSION_ID\"\n\nTier guide: Foundation=core values/identity (rare), Strategic=conventions/processes (1yr), Operational=working knowledge/decisions (3mo), Tactical=this week'\''s context (7d), Momentary=right now (8hr).\nCategories: Decision, Fact, Convention, Issue.\n\nWrite content as short declarative statements, like briefing a new team member. Lead with DECISION:/FACT:/CONVENTION:/ISSUE: prefix.\n\nSkip ONLY if the session was trivial (health checks, greetings, no substantive work). If any real work was done, save at least one memory. Run saves in the background (run_in_background: true).'
+CONTEXT='REQUIRED: Before this session ends, write a comprehensive summary of this session. Include everything that happened — every decision, finding, action, and outcome. Then send it to the Mnemo API.\n\nCall the process endpoint:\n\nbash \"${CLAUDE_PLUGIN_ROOT}/hooks-handlers/process-context.sh\" \\\n  --hook-type \"stop\" \\\n  --context \"<your comprehensive session summary>\" \\\n  --working-dir \"$PWD\" \\\n  --session-id \"$CLAUDE_SESSION_ID\"\n\nWrite the summary as if briefing someone who was not in the session. Be thorough — the server will decide what to save.\n\nRun in the background (run_in_background: true).'
 
 printf '{"decision":"block","reason":"Mnemo: saving important memories...","systemMessage":"%s"}' "$CONTEXT"
 exit 2
