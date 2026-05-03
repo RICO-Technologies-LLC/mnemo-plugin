@@ -6,40 +6,25 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
    - If the user wrote something after `/mnemo:save`, save that specific thing.
    - If they just typed `/mnemo:save` with nothing else, review the recent conversation and identify the most important decision, convention, fact, or insight worth persisting.
 
-2. Pick the right metadata based on what's being saved:
-   - **Tier**: Foundation (permanent identity/values), Strategic (long-term decisions), Operational (active project knowledge), Tactical (this week's context), Momentary (right now)
-   - **Category**: Decision, Convention, Fact, Issue, or Initialization
-   - **Scope**: A lowercase keyword describing what area this applies to (e.g., "backend", "frontend", "deployment", "global")
-   - **Topic**: A short title (3-8 words)
-   - **Content**: The substantive detail. Be specific and actionable, not vague.
-
-3. Run the save script. Use the Bash tool. **Important:** Use the heredoc pattern shown below to prevent bash from expanding `$`, backticks, or other special characters in the content:
+2. Run the save script. Use the Bash tool. Pass the substantive content as `--context`. Mnemo's server processes the context and decides how to file it. **Important:** Use the heredoc pattern shown below to prevent bash from expanding `$`, backticks, or other special characters in the content:
 
    ```
-   _mnemo_content=$(cat <<'MNEMO_CONTENT'
-   CONTENT
-   MNEMO_CONTENT
+   _mnemo_context=$(cat <<'MNEMO_CONTEXT'
+   CONTEXT
+   MNEMO_CONTEXT
    )
    bash "${HOME}/.claude/mnemo/hooks-handlers/save-memory.sh" \
-     --tier "TIER" \
-     --category "CATEGORY" \
-     --scope "SCOPE" \
-     --topic "TOPIC" \
-     --content "$_mnemo_content" \
+     --context "$_mnemo_context" \
      --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
-     --session-id "$CLAUDE_SESSION_ID" \
-     --visibility "VISIBILITY" \
-     --permission-group-id GROUP_ID
+     --session-id "$CLAUDE_SESSION_ID"
    ```
 
-   `--visibility` and `--permission-group-id` are optional. Visibility defaults to Global. For group-scoped memories, set `--visibility group` and provide the group ID (find it via `list-groups.sh`).
+   Replace `CONTEXT` with the substantive content you want to save. Be specific and actionable, not vague. Include enough surrounding context that the server can file it correctly (e.g., what project or topic it relates to, why it matters).
 
-4. Confirm to the user what was saved: the topic, tier, and a one-line summary. Keep it brief.
+3. Confirm to the user that the memory was sent for processing. Keep it brief — one sentence. Do **not** announce internal classification details (the server decides those).
 
 ## Guidelines
 
-- Default to **Operational** tier unless the content clearly fits another tier.
-- Default to **Decision** category for choices made, **Convention** for patterns/rules, **Fact** for objective information, **Issue** for problems encountered.
-- Keep content under 500 characters. Be dense and specific, not verbose.
-- If unsure about scope, use the current project or directory name.
-- Do not ask the user to confirm metadata. Just save it. If they want to adjust, they can say so after.
+- Keep the context dense and specific. Aim for under 500 characters of substantive content unless the situation genuinely needs more.
+- If the user pushes back on what was saved, ask them what they'd like changed and save a follow-up memory with the correction. Do not try to override the server's decision from the client.
+- Do not ask the user to confirm before saving. Just save it.
