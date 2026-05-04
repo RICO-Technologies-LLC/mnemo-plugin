@@ -14,7 +14,15 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 
 WORK_DIR="$PWD"
 
-# Persist launch directory so later commands use the session root, not transient $PWD
+# Persist launch directory so later commands use the session root, not transient $PWD.
+# Bug #4 (Intervals #29902): the session-dir file is suffixed with the Claude
+# session ID so concurrent sessions on the same machine do not clobber each
+# other. Legacy unsuffixed file is still written as a fallback for tools that
+# have not been updated yet (graceful upgrade).
+SESSION_DIR_SUFFIX="${CLAUDE_SESSION_ID:-}"
+if [[ -n "$SESSION_DIR_SUFFIX" ]]; then
+    echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir-${SESSION_DIR_SUFFIX}"
+fi
 echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir"
 
 # Check if config is loaded — guide unconfigured users to run setup

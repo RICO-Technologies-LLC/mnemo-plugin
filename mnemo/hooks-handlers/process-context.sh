@@ -23,9 +23,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Default working directory from session launch dir if not provided
+# Default working directory from session launch dir if not provided.
+# Bug #4 (Intervals #29902): prefer per-session file to prevent cross-session contamination.
 if [[ -z "$WORKING_DIR" ]]; then
-    WORKING_DIR="$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")"
+    _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir"
+    if [[ -n "${CLAUDE_SESSION_ID:-}" && -f "${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}" ]]; then
+        _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}"
+    fi
+    WORKING_DIR="$(cat "$_mnemo_session_dir_file" 2>/dev/null || echo "$PWD")"
 fi
 
 # Validate required fields

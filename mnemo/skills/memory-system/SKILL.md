@@ -290,7 +290,7 @@ Store enough that any Claude session can do a great job working with the team. D
 
 ## Working Directory
 
-`--working-dir` is optional. If omitted, `save-memory.sh` reads the session launch directory from `${TMPDIR:-/tmp}/mnemo-session-dir` (written by `session-start.sh` at session startup). This ensures the recorded directory is always the project root where Claude Code was launched, not a transient subdirectory or worktree. Falls back to `$PWD` if the session dir file doesn't exist.
+`--working-dir` is optional. If omitted, `save-memory.sh` reads the session launch directory from a per-session file `${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}` (written by `session-start.sh` at session startup). The per-session suffix prevents concurrent Claude sessions on the same machine from clobbering each other's launch dir. Falls back to the legacy unsuffixed file `${TMPDIR:-/tmp}/mnemo-session-dir` for backward compatibility, then to `$PWD` if neither exists.
 
 The API records the working directory for directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — recording it simply tells future sessions where the memory was created.
 
