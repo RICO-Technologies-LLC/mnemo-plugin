@@ -37,9 +37,17 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Default working directory
+# Default working directory.
+# Bug #4 (Intervals #29902): prefer the per-session file (suffixed with
+# $CLAUDE_SESSION_ID) so concurrent Claude sessions don't contaminate each
+# other's working-dir metadata. Fall back to the legacy unsuffixed file for
+# sessions that started before the fix shipped, then to $PWD.
 if [[ -z "$WORKING_DIR" ]]; then
-    WORKING_DIR="$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")"
+    _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir"
+    if [[ -n "${CLAUDE_SESSION_ID:-}" && -f "${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}" ]]; then
+        _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}"
+    fi
+    WORKING_DIR="$(cat "$_mnemo_session_dir_file" 2>/dev/null || echo "$PWD")"
 fi
 
 # If legacy arguments were used, build context from them
