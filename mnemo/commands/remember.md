@@ -15,7 +15,7 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
    )
    bash "${HOME}/.claude/mnemo/hooks-handlers/save-memory.sh" \
      --context "$_mnemo_context" \
-     --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
+     --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID:-_}" 2>/dev/null || cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
      --session-id "$CLAUDE_SESSION_ID"
    ```
 
