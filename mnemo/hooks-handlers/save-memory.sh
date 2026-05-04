@@ -55,7 +55,7 @@ if [[ -z "$CONTEXT" ]]; then
     exit 1
 fi
 
-if mnemo_process_context "$CONTEXT" "manual" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID"; then
+if mnemo_process_context "$CONTEXT" "manual" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID" "$VISIBILITY" "$PERMISSION_GROUP_ID"; then
     echo "Memory sent to Mnemo for processing."
 else
     _mnemo_format_error "save"
