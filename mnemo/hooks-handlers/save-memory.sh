@@ -68,7 +68,8 @@ if [[ -z "$CONTEXT" ]]; then
 fi
 
 if mnemo_process_context "$CONTEXT" "manual" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID" "$VISIBILITY" "$PERMISSION_GROUP_ID"; then
-    echo "Memory sent to Mnemo for processing."
+    # Bug #8 (#29950): print the server's short ack when available, otherwise fall back.
+    echo "${MNEMO_PROCESS_MESSAGE:-Memory sent to Mnemo for processing.}"
 else
     _mnemo_format_error "save"
     exit 1

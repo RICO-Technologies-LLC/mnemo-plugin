@@ -19,6 +19,8 @@ MNEMO_TMPDIR="${TMPDIR:-/tmp}"
 # HTTP response globals
 MNEMO_HTTP_CODE=""
 MNEMO_RESPONSE=""
+# Set by mnemo_process_context — the server's short ack message (Bug #8 / #29950)
+MNEMO_PROCESS_MESSAGE=""
 
 # Default API URL
 _MNEMO_DEFAULT_URL="https://mmryai.com"
@@ -409,6 +411,26 @@ mnemo_process_context() {
         "#permissionGroupID"  "$permission_group_id")
 
     _mnemo_request POST "/api/memories/process" "$body"
+    local rc=$?
+
+    # Bug #8 (Intervals #29950): server returns 202 with { "message": "..." }.
+    # Surface the message for callers (save-memory.sh, process-context.sh) so
+    # they can print the actual ack instead of a generic placeholder.
+    MNEMO_PROCESS_MESSAGE=""
+    if [[ -n "$MNEMO_RESPONSE" ]]; then
+        if command -v jq &>/dev/null; then
+            MNEMO_PROCESS_MESSAGE="$(printf '%s' "$MNEMO_RESPONSE" | jq -r '.message // empty' 2>/dev/null || true)"
+        fi
+        if [[ -z "$MNEMO_PROCESS_MESSAGE" ]]; then
+            # Fallback parser for jq-less environments — match a single `"message":"..."` pair.
+            MNEMO_PROCESS_MESSAGE="$(printf '%s' "$MNEMO_RESPONSE" \
+                | { grep -o '"message"[[:space:]]*:[[:space:]]*"[^"]*"' || true; } \
+                | head -1 \
+                | sed 's/.*"\([^"]*\)"$/\1/')"
+        fi
+    fi
+
+    return $rc
 }
 
 mnemo_health() {
