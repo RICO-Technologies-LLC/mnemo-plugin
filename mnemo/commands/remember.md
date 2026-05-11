@@ -15,9 +15,10 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
    )
    bash "${HOME}/.claude/mnemo/hooks-handlers/save-memory.sh" \
      --context "$_mnemo_context" \
-     --working-dir "$(cat "${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID:-_}" 2>/dev/null || cat "${TMPDIR:-/tmp}/mnemo-session-dir" 2>/dev/null || echo "$PWD")" \
      --session-id "$CLAUDE_SESSION_ID"
    ```
+
+   The server resolves the working directory from the registered session — no need to pass `--working-dir` explicitly. Pass it only when overriding the session-recorded value.
 
    Replace `CONTEXT` with the substantive content you want to save. Be specific and actionable, not vague. Include enough surrounding context that the server can file it correctly (e.g., what project or topic it relates to, why it matters).
 

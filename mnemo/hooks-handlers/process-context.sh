@@ -23,14 +23,18 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Default working directory from session launch dir if not provided.
-# Bug #4 (Intervals #29902): prefer per-session file to prevent cross-session contamination.
-if [[ -z "$WORKING_DIR" ]]; then
-    _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir"
-    if [[ -n "${CLAUDE_SESSION_ID:-}" && -f "${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}" ]]; then
-        _mnemo_session_dir_file="${TMPDIR:-/tmp}/mnemo-session-dir-${CLAUDE_SESSION_ID}"
-    fi
-    WORKING_DIR="$(cat "$_mnemo_session_dir_file" 2>/dev/null || echo "$PWD")"
+# Default session_id from env when not passed explicitly.
+if [[ -z "$SESSION_ID" ]]; then
+    SESSION_ID="${CLAUDE_SESSION_ID:-}"
+fi
+
+# Default working directory.
+# Bug #9 (Intervals #29949): /tmp/mnemo-session-dir lookups removed. Working
+# directory is now persisted on dbo.Session at SessionStart and resolved by
+# the API when a save supplies session_id but no working_dir. $PWD is the
+# client-side fallback only when no session_id is available.
+if [[ -z "$WORKING_DIR" && -z "$SESSION_ID" ]]; then
+    WORKING_DIR="$PWD"
 fi
 
 # Validate required fields
