@@ -44,7 +44,8 @@ if [[ -z "$HOOK_TYPE" || -z "$CONTEXT" ]]; then
 fi
 
 if mnemo_process_context "$CONTEXT" "$HOOK_TYPE" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID"; then
-    echo "Context sent to Mnemo for processing."
+    # Bug #8 (#29950): print the server's short ack when available, otherwise fall back.
+    echo "${MNEMO_PROCESS_MESSAGE:-Context sent to Mnemo for processing.}"
 else
     _mnemo_format_error "process"
     exit 1
