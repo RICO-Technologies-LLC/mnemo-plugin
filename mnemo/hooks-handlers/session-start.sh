@@ -14,16 +14,34 @@ source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
 
 WORK_DIR="$PWD"
 
-# Persist launch directory so later commands use the session root, not transient $PWD.
-# Bug #4 (Intervals #29902): the session-dir file is suffixed with the Claude
-# session ID so concurrent sessions on the same machine do not clobber each
-# other. Legacy unsuffixed file is still written as a fallback for tools that
-# have not been updated yet (graceful upgrade).
-SESSION_DIR_SUFFIX="${CLAUDE_SESSION_ID:-}"
-if [[ -n "$SESSION_DIR_SUFFIX" ]]; then
-    echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir-${SESSION_DIR_SUFFIX}"
+# Bug #9 (Intervals #29949): read session_id from the SessionStart hook stdin
+# payload (always present per the Claude Code hook spec). The CLAUDE_SESSION_ID
+# env var is not reliably exported across hook and Bash-tool environments, so
+# we treat stdin as the canonical source. The fallback chain ends at "unknown"
+# only when the script is invoked outside a hook context (e.g., manual tests).
+HOOK_PAYLOAD='{}'
+if [[ ! -t 0 ]]; then
+    # stdin is not a terminal — read piped hook payload (with a 2s safety cap
+    # in case something pipes us a never-closing stream).
+    HOOK_PAYLOAD="$( { timeout 2 cat 2>/dev/null || true; } )"
+    [[ -z "$HOOK_PAYLOAD" ]] && HOOK_PAYLOAD='{}'
 fi
-echo "$WORK_DIR" > "${MNEMO_TMPDIR}/mnemo-session-dir"
+
+SESSION_ID=""
+if command -v jq &>/dev/null; then
+    SESSION_ID="$(printf '%s' "$HOOK_PAYLOAD" | jq -r '.session_id // empty' 2>/dev/null || true)"
+fi
+if [[ -z "$SESSION_ID" ]]; then
+    # jq missing or stdin not JSON — try a grep extraction, then env var, then "unknown".
+    # grep -o returns 1 on no match; the || true keeps set -e from killing the script.
+    SESSION_ID="$(printf '%s' "$HOOK_PAYLOAD" | { grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' || true; } | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+    SESSION_ID="${SESSION_ID:-${CLAUDE_SESSION_ID:-unknown}}"
+fi
+
+# NOTE: Bug #9 fix removed the /tmp/mnemo-session-dir and
+# /tmp/mnemo-session-dir-${SESSION_ID} writes that previously lived here.
+# Working directory is now persisted server-side via the /api/sessions POST
+# below; save-memory.sh resolves it back from the API when needed.
 
 # Check if config is loaded — guide unconfigured users to run setup
 if [[ -z "${MNEMO_API_KEY:-}" ]]; then
@@ -107,9 +125,10 @@ else
     count="$(echo "$MNEMO_RESPONSE" | { grep -o '"id"' || true; } | wc -l | tr -d ' ')"
 fi
 
-# Register session
-session_id="${CLAUDE_SESSION_ID:-unknown}"
-mnemo_register_session "$session_id" "claude-code" "$WORK_DIR" "" 2>/dev/null || true
+# Register session — uses session_id read from hook stdin (see top of file).
+# WORK_DIR is persisted server-side here; subsequent save calls reference it
+# via session_id rather than reading a (collidable) /tmp file.
+mnemo_register_session "$SESSION_ID" "claude-code" "$WORK_DIR" "" 2>/dev/null || true
 
 # Escape path for JSON
 escaped_path="$(echo "$MEM_FILE" | sed 's/\\/\\\\/g')"
