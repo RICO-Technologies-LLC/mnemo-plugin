@@ -19,14 +19,22 @@ WORK_DIR="$PWD"
 # env var is not reliably exported across hook and Bash-tool environments, so
 # we treat stdin as the canonical source. The fallback chain ends at "unknown"
 # only when the script is invoked outside a hook context (e.g., manual tests).
-HOOK_PAYLOAD="$(cat 2>/dev/null || echo '{}')"
+HOOK_PAYLOAD='{}'
+if [[ ! -t 0 ]]; then
+    # stdin is not a terminal — read piped hook payload (with a 2s safety cap
+    # in case something pipes us a never-closing stream).
+    HOOK_PAYLOAD="$( { timeout 2 cat 2>/dev/null || true; } )"
+    [[ -z "$HOOK_PAYLOAD" ]] && HOOK_PAYLOAD='{}'
+fi
+
 SESSION_ID=""
 if command -v jq &>/dev/null; then
     SESSION_ID="$(printf '%s' "$HOOK_PAYLOAD" | jq -r '.session_id // empty' 2>/dev/null || true)"
 fi
 if [[ -z "$SESSION_ID" ]]; then
-    # jq missing or stdin not JSON — fall back to env var, then to "unknown".
-    SESSION_ID="$(printf '%s' "$HOOK_PAYLOAD" | grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+    # jq missing or stdin not JSON — try a grep extraction, then env var, then "unknown".
+    # grep -o returns 1 on no match; the || true keeps set -e from killing the script.
+    SESSION_ID="$(printf '%s' "$HOOK_PAYLOAD" | { grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' || true; } | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
     SESSION_ID="${SESSION_ID:-${CLAUDE_SESSION_ID:-unknown}}"
 fi
 
