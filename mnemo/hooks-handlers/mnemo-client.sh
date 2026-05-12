@@ -430,7 +430,23 @@ mnemo_process_context() {
         fi
     fi
 
+    # #29912 — record successful save so stop-check.sh can compute time-since-last-save
+    # and reset the no-save-counter that drives compliance escalation.
+    if [[ $rc -eq 0 ]]; then
+        _mnemo_mark_save_success || true
+    fi
+
     return $rc
+}
+
+# Mark a successful save in the local state files. stop-check.sh reads these to
+# (a) format the systemMessage with an incremental last-save anchor and
+# (b) reset the per-firing counter that triggers compliance escalation.
+# Errors here are non-fatal — the network call already succeeded.
+_mnemo_mark_save_success() {
+    local d="${MNEMO_TMPDIR:-${TMPDIR:-/tmp}}"
+    date +%s > "${d}/.mnemo-last-save" 2>/dev/null || true
+    rm -f "${d}/.mnemo-stop-count" 2>/dev/null || true
 }
 
 mnemo_health() {
