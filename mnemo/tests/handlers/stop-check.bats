@@ -33,3 +33,43 @@ load '../helpers/test-helper'
     [[ "$status" -eq 2 ]]
     [[ "$output" == *'"decision":"block"'* ]]
 }
+
+# --- Directive-wording contract (#29854) --------------------------------------
+
+@test "stop-check: reason field reads as a directive, not a status line" {
+    rm -f "$TEST_TMPDIR/.mnemo-stop-checked"
+    run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
+    [[ "$status" -eq 2 ]]
+    # Reason must start with BLOCKED: (or carry equivalent directive marker).
+    [[ "$output" == *'"reason":"BLOCKED:'* ]]
+    # Must not contain the old ambiguous status-line phrasing.
+    [[ "$output" != *'"reason":"Mnemo: saving important memories'* ]]
+}
+
+@test "stop-check: systemMessage includes the full process-context.sh command" {
+    rm -f "$TEST_TMPDIR/.mnemo-stop-checked"
+    run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
+    [[ "$status" -eq 2 ]]
+    [[ "$output" == *'process-context.sh'* ]]
+    # All four required flags must be visible.
+    [[ "$output" == *'--hook-type'* ]]
+    [[ "$output" == *'--context'* ]]
+    [[ "$output" == *'--working-dir'* ]]
+    [[ "$output" == *'--session-id'* ]]
+}
+
+@test "stop-check: systemMessage instructs run-in-background" {
+    rm -f "$TEST_TMPDIR/.mnemo-stop-checked"
+    run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
+    [[ "$status" -eq 2 ]]
+    [[ "$output" == *'run_in_background'* ]] || [[ "$output" == *'IN THE BACKGROUND'* ]]
+}
+
+@test "stop-check: systemMessage forbids Acknowledged-style responses" {
+    rm -f "$TEST_TMPDIR/.mnemo-stop-checked"
+    run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
+    [[ "$status" -eq 2 ]]
+    # The directive must explicitly call out the failure mode it exists to prevent.
+    [[ "$output" == *'Acknowledged'* ]]
+    [[ "$output" == *'Do NOT'* ]] || [[ "$output" == *'do not'* ]]
+}
