@@ -1,4 +1,4 @@
-# Mnemo Plugin for Claude Code
+# MMRY AI Plugin for Claude Code
 
 Persistent memory system that gives Claude Code long-term recall across sessions.
 
@@ -54,7 +54,7 @@ claude
 
 Once signed in, type `/exit` to close.
 
-### 5. Install the Mnemo plugin
+### 5. Install the MMRY AI plugin
 
 Launch Claude Code:
 ```bash
@@ -63,8 +63,8 @@ claude
 
 Run these two commands inside Claude Code:
 ```
-/plugin marketplace add RICO-Technologies-LLC/mnemo-plugin
-/plugin install mnemo@mnemo-plugin
+/plugin marketplace add MMRY-AI/mmry-plugin
+/plugin install mmry@mmry-plugin
 ```
 
 Type `/exit` to close.
@@ -78,7 +78,7 @@ claude
 
 Claude will detect that MMRY AI is installed but not configured and run setup automatically. It opens your browser so you can log in or create an account on mmryai.com, then configures everything.
 
-If the automatic prompt doesn't appear, type `/mnemo:setup` to start manually.
+If the automatic prompt doesn't appear, type `/mmry:setup` to start manually.
 
 ### 7. Restart Claude Code
 
@@ -87,7 +87,7 @@ Type `/exit`, then:
 claude
 ```
 
-Done! MMRY AI is active. On your first session, Claude will help you create your initial memories. Type `/mnemo:help` anytime for a quick reference.
+Done! MMRY AI is active. On your first session, Claude will help you create your initial memories. Type `/mmry:help` anytime for a quick reference.
 
 ## Setup (Windows)
 
@@ -113,8 +113,8 @@ Then follow Steps 4–7 from the macOS instructions above.
 If you already have Claude Code installed:
 
 ```
-/plugin marketplace add RICO-Technologies-LLC/mnemo-plugin
-/plugin install mnemo@mnemo-plugin
+/plugin marketplace add MMRY-AI/mmry-plugin
+/plugin install mmry@mmry-plugin
 ```
 
 Restart Claude Code. Claude will guide you through setup automatically. Restart again after setup completes. Done.
@@ -125,7 +125,7 @@ When installed from the GitHub marketplace, the plugin updates automatically whe
 
 ## Documentation
 
-See the [plugin README](mnemo/README.md) for full documentation on configuration, commands, and the memory skill.
+See the [plugin README](mmry/README.md) for full documentation on configuration, commands, and the memory skill.
 
 ## License
 

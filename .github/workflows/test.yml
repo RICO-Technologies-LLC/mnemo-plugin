@@ -20,7 +20,7 @@ jobs:
 
       - name: Run offline tests (structural + unit + handlers)
         run: |
-          cd mnemo/tests
+          cd mmry/tests
           chmod +x run-tests.sh
           chmod +x libs/bats-core/bin/bats
           ./run-tests.sh offline
@@ -37,9 +37,9 @@ jobs:
 
       - name: Run integration tests
         env:
-          MNEMO_INTEGRATION_API_KEY: ${{ secrets.MNEMO_INTEGRATION_API_KEY }}
+          MMRY_INTEGRATION_API_KEY: ${{ secrets.MMRY_INTEGRATION_API_KEY }}
         run: |
-          cd mnemo/tests
+          cd mmry/tests
           chmod +x run-tests.sh
           chmod +x libs/bats-core/bin/bats
           ./run-tests.sh integration
