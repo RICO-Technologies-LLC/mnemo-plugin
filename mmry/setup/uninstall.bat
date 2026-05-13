@@ -1,24 +1,24 @@
 @echo off
 powershell.exe -ExecutionPolicy Bypass -Command ^
   "$settingsPath = Join-Path $env:USERPROFILE '.claude\settings.json';" ^
-  "$configPath = Join-Path $env:USERPROFILE '.claude\mnemo-config.json';" ^
-  "$pluginNames = @('mnemo@mnemo-plugin', 'mnemo@internal-plugins');" ^
-  "$marketplaceNames = @('mnemo-plugin', 'internal-plugins');" ^
-  "$mnemoPerms = @(" ^
+  "$configPath = Join-Path $env:USERPROFILE '.claude\mmry-config.json';" ^
+  "$pluginNames = @('mmry@mmry-plugin', 'mmry@internal-plugins');" ^
+  "$marketplaceNames = @('mmry-plugin', 'internal-plugins');" ^
+  "$mmryPerms = @(" ^
   "  'Bash(*save-memory.sh*)'," ^
   "  'Bash(*reinforce-memory.sh*)'," ^
   "  'Bash(*deactivate-memory.sh*)'," ^
   "  'Bash(*link-memories.sh*)'," ^
   "  'Bash(*search-memories.sh*)'," ^
-  "  'Bash(*mnemo-client.sh*)'" ^
+  "  'Bash(*mmry-client.sh*)'" ^
   ");" ^
   "" ^
-  "Write-Host ''; Write-Host '=== Mnemo Uninstall ===' -ForegroundColor Cyan; Write-Host '';" ^
+  "Write-Host ''; Write-Host '=== MMRY AI Uninstall ===' -ForegroundColor Cyan; Write-Host '';" ^
   "" ^
   "# Remove config file" ^
   "if (Test-Path $configPath) {" ^
   "  Remove-Item $configPath -Force;" ^
-  "  Write-Host '  Removed mnemo-config.json'" ^
+  "  Write-Host '  Removed mmry-config.json'" ^
   "} else {" ^
   "  Write-Host '  No config file found (already removed).'" ^
   "}" ^
@@ -58,9 +58,9 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "    $changed = $true" ^
   "  }" ^
   "" ^
-  "  # Remove Mnemo permissions" ^
+  "  # Remove MMRY AI permissions" ^
   "  if ($settings.PSObject.Properties['permissions'] -and $settings.permissions.PSObject.Properties['allow']) {" ^
-  "    $settings.permissions.allow = @($settings.permissions.allow | Where-Object { $_ -notin $mnemoPerms });" ^
+  "    $settings.permissions.allow = @($settings.permissions.allow | Where-Object { $_ -notin $mmryPerms });" ^
   "    $changed = $true;" ^
   "    if ($settings.permissions.allow.Count -eq 0) {" ^
   "      $settings.permissions.PSObject.Properties.Remove('allow')" ^
@@ -74,20 +74,20 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "    $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8;" ^
   "    Write-Host '  Cleaned settings.json (plugin, marketplace, permissions)'" ^
   "  } else {" ^
-  "    Write-Host '  No Mnemo entries found in settings.json.'" ^
+  "    Write-Host '  No MMRY AI entries found in settings.json.'" ^
   "  }" ^
   "}" ^
   "" ^
   "# Remove stable hooks directory" ^
-  "$mnemoDir = Join-Path $env:USERPROFILE '.claude\mnemo';" ^
-  "if (Test-Path $mnemoDir) {" ^
-  "  Remove-Item $mnemoDir -Recurse -Force;" ^
-  "  Write-Host '  Removed ~/.claude/mnemo/'" ^
+  "$mmryDir = Join-Path $env:USERPROFILE '.claude\mmry';" ^
+  "if (Test-Path $mmryDir) {" ^
+  "  Remove-Item $mmryDir -Recurse -Force;" ^
+  "  Write-Host '  Removed ~/.claude/mmry/'" ^
   "}" ^
   "" ^
   "# Clear plugin cache" ^
-  "foreach ($cacheName in @('mnemo-plugin', 'internal-plugins')) {" ^
-  "  $cacheDir = Join-Path $env:USERPROFILE \".claude\\plugins\\cache\\$cacheName\\mnemo\";" ^
+  "foreach ($cacheName in @('mmry-plugin', 'internal-plugins')) {" ^
+  "  $cacheDir = Join-Path $env:USERPROFILE \".claude\\plugins\\cache\\$cacheName\\mmry\";" ^
   "  if (Test-Path $cacheDir) {" ^
   "    Remove-Item $cacheDir -Recurse -Force;" ^
   "    Write-Host \"  Cleared plugin cache ($cacheName)\"" ^
@@ -95,6 +95,6 @@ powershell.exe -ExecutionPolicy Bypass -Command ^
   "}" ^
   "" ^
   "Write-Host '';" ^
-  "Write-Host 'Mnemo uninstalled.' -ForegroundColor Green;" ^
+  "Write-Host 'MMRY AI uninstalled.' -ForegroundColor Green;" ^
   "Write-Host 'Restart Claude Code to take effect.';" ^
   "Write-Host ''"

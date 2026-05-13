@@ -53,19 +53,19 @@ load '../helpers/test-helper'
     grep -q 'BASH_VERSINFO' "$PLUGIN_ROOT/setup/install.sh"
 }
 
-# ── mnemo-setup.sh platform dispatch ──
+# ── mmry-setup.sh platform dispatch ──
 
-@test "mnemo-setup.sh dispatches to install.ps1 on Windows (MINGW/MSYS/CYGWIN)" {
-    grep -q 'MINGW\|MSYS\|CYGWIN' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
-    grep -q 'install.ps1' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+@test "mmry-setup.sh dispatches to install.ps1 on Windows (MINGW/MSYS/CYGWIN)" {
+    grep -q 'MINGW\|MSYS\|CYGWIN' "$PLUGIN_ROOT/setup/mmry-setup.sh"
+    grep -q 'install.ps1' "$PLUGIN_ROOT/setup/mmry-setup.sh"
 }
 
-@test "mnemo-setup.sh dispatches to install.sh on non-Windows" {
-    grep -q 'install.sh' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+@test "mmry-setup.sh dispatches to install.sh on non-Windows" {
+    grep -q 'install.sh' "$PLUGIN_ROOT/setup/mmry-setup.sh"
 }
 
-@test "mnemo-setup.sh uses uname -s for platform detection" {
-    grep -q 'uname -s' "$PLUGIN_ROOT/setup/mnemo-setup.sh"
+@test "mmry-setup.sh uses uname -s for platform detection" {
+    grep -q 'uname -s' "$PLUGIN_ROOT/setup/mmry-setup.sh"
 }
 
 # ── hooks.json Windows compatibility ──
@@ -121,15 +121,15 @@ load '../helpers/test-helper'
     grep -q 'setup/\*\.sh' "$PLUGIN_ROOT/hooks-handlers/session-init.sh"
 }
 
-# ── mnemo-client.sh portability ──
+# ── mmry-client.sh portability ──
 
-@test "mnemo-client.sh uses portable shebang (env bash)" {
+@test "mmry-client.sh uses portable shebang (env bash)" {
     local first_line
-    first_line="$(head -1 "$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh")"
+    first_line="$(head -1 "$PLUGIN_ROOT/hooks-handlers/mmry-client.sh")"
     [[ "$first_line" == "#!/usr/bin/env bash" ]]
 }
 
-@test "mnemo-client.sh error messages reference slash commands not file paths" {
+@test "mmry-client.sh error messages reference slash commands not file paths" {
     # No error message should tell users to run 'bash /path/to/script.sh'
-    ! grep -q 'Run setup: bash' "$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh"
+    ! grep -q 'Run setup: bash' "$PLUGIN_ROOT/hooks-handlers/mmry-client.sh"
 }

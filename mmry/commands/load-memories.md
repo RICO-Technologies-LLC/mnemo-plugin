@@ -1,4 +1,4 @@
-Manually reload memories from the Mnemo API into your current context. This is equivalent to the automatic session-start load but can be run mid-session to refresh.
+Manually reload memories from the MMRY AI API into your current context. This is equivalent to the automatic session-start load but can be run mid-session to refresh.
 
 **Steps:**
 1. Run the plugin's session-start bash script directly:

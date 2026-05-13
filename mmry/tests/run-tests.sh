@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run Mnemo plugin tests
+# Run MMRY AI plugin tests
 # Usage: ./run-tests.sh [category]
 #   category: structural, unit, handlers, e2e, integration, all, offline (default)
 

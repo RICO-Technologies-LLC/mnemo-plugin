@@ -1,32 +1,32 @@
 #!/usr/bin/env bash
-# uninstall.sh — Uninstall Mnemo plugin for Claude Code (macOS/Linux)
+# uninstall.sh — Uninstall MMRY AI plugin for Claude Code (macOS/Linux)
 set -euo pipefail
 
 CLAUDE_DIR="${HOME}/.claude"
 SETTINGS_PATH="${CLAUDE_DIR}/settings.json"
-CONFIG_PATH="${CLAUDE_DIR}/mnemo-config.json"
+CONFIG_PATH="${CLAUDE_DIR}/mmry-config.json"
 
 # Handle both marketplace and local install key names
-PLUGIN_NAMES=("mnemo@mnemo-plugin" "mnemo@internal-plugins")
-MARKETPLACE_NAMES=("mnemo-plugin" "internal-plugins")
-MNEMO_PERMISSIONS=(
+PLUGIN_NAMES=("mmry@mmry-plugin" "mmry@internal-plugins")
+MARKETPLACE_NAMES=("mmry-plugin" "internal-plugins")
+MMRY_PERMISSIONS=(
     "Bash(*save-memory.sh*)"
     "Bash(*reinforce-memory.sh*)"
     "Bash(*deactivate-memory.sh*)"
     "Bash(*link-memories.sh*)"
     "Bash(*search-memories.sh*)"
     "Bash(*submit-feedback.sh*)"
-    "Bash(*mnemo-client.sh*)"
+    "Bash(*mmry-client.sh*)"
 )
 
 echo ""
-echo "=== Mnemo Uninstall ==="
+echo "=== MMRY AI Uninstall ==="
 echo ""
 
 # Step 1: Remove config file
 if [[ -f "$CONFIG_PATH" ]]; then
     rm -f "$CONFIG_PATH"
-    echo "  Removed mnemo-config.json"
+    echo "  Removed mmry-config.json"
 else
     echo "  No config file found (already removed)."
 fi
@@ -66,8 +66,8 @@ else
         # Re-enable built-in auto memory
         settings="$(echo "$settings" | jq 'del(.autoMemoryEnabled)')"
 
-        # Remove Mnemo permissions
-        for perm in "${MNEMO_PERMISSIONS[@]}"; do
+        # Remove MMRY AI permissions
+        for perm in "${MMRY_PERMISSIONS[@]}"; do
             settings="$(echo "$settings" | jq --arg p "$perm" '
                 if .permissions.allow then .permissions.allow -= [$p] else . end
             ')"
@@ -92,16 +92,16 @@ else
             "$PY_CMD" - "$SETTINGS_PATH" << 'PYEOF'
 import json, sys
 sf = sys.argv[1]
-plugin_names = ["mnemo@mnemo-plugin", "mnemo@internal-plugins"]
-marketplace_names = ["mnemo-plugin", "internal-plugins"]
-mnemo_perms = [
+plugin_names = ["mmry@mmry-plugin", "mmry@internal-plugins"]
+marketplace_names = ["mmry-plugin", "internal-plugins"]
+mmry_perms = [
     "Bash(*save-memory.sh*)",
     "Bash(*reinforce-memory.sh*)",
     "Bash(*deactivate-memory.sh*)",
     "Bash(*link-memories.sh*)",
     "Bash(*search-memories.sh*)",
     "Bash(*submit-feedback.sh*)",
-    "Bash(*mnemo-client.sh*)"
+    "Bash(*mmry-client.sh*)"
 ]
 with open(sf) as f:
     data = json.load(f)
@@ -117,7 +117,7 @@ if "extraKnownMarketplaces" in data:
         del data["extraKnownMarketplaces"]
 data.pop("autoMemoryEnabled", None)
 if "permissions" in data and "allow" in data["permissions"]:
-    data["permissions"]["allow"] = [p for p in data["permissions"]["allow"] if p not in mnemo_perms]
+    data["permissions"]["allow"] = [p for p in data["permissions"]["allow"] if p not in mmry_perms]
     if not data["permissions"]["allow"]:
         del data["permissions"]["allow"]
     if not data["permissions"]:
@@ -129,22 +129,22 @@ PYEOF
             echo "  Cleaned settings.json (plugin, marketplace, permissions)"
         else
             echo "  Warning: jq and python not found. Manually edit ${SETTINGS_PATH}:"
-            echo "    - Remove mnemo entries from enabledPlugins"
-            echo "    - Remove mnemo entries from extraKnownMarketplaces"
-            echo "    - Remove Mnemo permissions from permissions.allow"
+            echo "    - Remove mmry entries from enabledPlugins"
+            echo "    - Remove mmry entries from extraKnownMarketplaces"
+            echo "    - Remove MMRY AI permissions from permissions.allow"
         fi
     fi
 fi
 
 # Step 3: Remove stable hooks directory
-if [[ -d "${HOME}/.claude/mnemo" ]]; then
-    rm -rf "${HOME}/.claude/mnemo"
-    echo "  Removed ~/.claude/mnemo/"
+if [[ -d "${HOME}/.claude/mmry" ]]; then
+    rm -rf "${HOME}/.claude/mmry"
+    echo "  Removed ~/.claude/mmry/"
 fi
 
 # Step 4: Clear plugin cache
-for cache_name in "mnemo-plugin" "internal-plugins"; do
-    CACHE_DIR="${CLAUDE_DIR}/plugins/cache/${cache_name}/mnemo"
+for cache_name in "mmry-plugin" "internal-plugins"; do
+    CACHE_DIR="${CLAUDE_DIR}/plugins/cache/${cache_name}/mmry"
     if [[ -d "$CACHE_DIR" ]]; then
         rm -rf "$CACHE_DIR"
         echo "  Cleared plugin cache (${cache_name})"
@@ -152,6 +152,6 @@ for cache_name in "mnemo-plugin" "internal-plugins"; do
 done
 
 echo ""
-echo "Mnemo uninstalled."
+echo "MMRY AI uninstalled."
 echo "Restart Claude Code to take effect."
 echo ""

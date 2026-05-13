@@ -4,10 +4,10 @@
 load '../helpers/test-helper'
 
 setup() {
-    export MNEMO_API_KEY="test-key"
-    export MNEMO_AUTH_METHOD="apikey"
-    export MNEMO_API_URL="http://localhost:5291"
-    source "$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh"
+    export MMRY_API_KEY="test-key"
+    export MMRY_AUTH_METHOD="apikey"
+    export MMRY_API_URL="http://localhost:5291"
+    source "$PLUGIN_ROOT/hooks-handlers/mmry-client.sh"
 }
 
 @test "date +%s returns a reasonable epoch number" {

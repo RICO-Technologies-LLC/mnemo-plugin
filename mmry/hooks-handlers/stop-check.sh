@@ -3,7 +3,7 @@
 #
 # Design (#29912):
 #   The Claude Code "Stop" event fires after every assistant turn, not at session end.
-#   Earlier versions blocked with a visible passive-status reason field ("Mnemo:
+#   Earlier versions blocked with a visible passive-status reason field ("MMRY AI:
 #   saving important memories..."), and assistants would reply "Acknowledged" without
 #   ever calling save-memory.sh. Net effect: multi-hour sessions produced zero memories.
 #
@@ -11,10 +11,10 @@
 #     1. Drop the visible reason field entirely. With nothing to acknowledge, the
 #        only natural response is to act on systemMessage.
 #     2. systemMessage is a single imperative line with an explicit skip clause.
-#     3. Track last successful save via ${TMPDIR}/.mnemo-last-save (written by
-#        mnemo-client.sh). The systemMessage surfaces minutes-since-last-save so
+#     3. Track last successful save via ${TMPDIR}/.mmry-last-save (written by
+#        mmry-client.sh). The systemMessage surfaces minutes-since-last-save so
 #        the assistant produces incremental memories, not duplicates.
-#     4. Compliance escalation: a per-session counter at ${TMPDIR}/.mnemo-stop-count
+#     4. Compliance escalation: a per-session counter at ${TMPDIR}/.mmry-stop-count
 #        increments each firing and resets on successful save. After 3 consecutive
 #        firings without a save the systemMessage demands a save-or-rationale.
 #     5. Debounce extended from 120s to 900s (15 min). A 4-hour session goes from
@@ -23,15 +23,15 @@
 set -euo pipefail
 
 TMPDIR="${TMPDIR:-/tmp}"
-MARKER="${TMPDIR}/.mnemo-stop-checked"
-LAST_SAVE="${TMPDIR}/.mnemo-last-save"
-STOP_COUNT_FILE="${TMPDIR}/.mnemo-stop-count"
+MARKER="${TMPDIR}/.mmry-stop-checked"
+LAST_SAVE="${TMPDIR}/.mmry-last-save"
+STOP_COUNT_FILE="${TMPDIR}/.mmry-stop-count"
 
 DEBOUNCE_SECONDS=900           # 15 minutes between visible firings
 ESCALATION_THRESHOLD=3         # consecutive firings without a save before nagging
 
 # Cross-platform mtime helper
-_mnemo_mtime() {
+_mmry_mtime() {
     if stat --version &>/dev/null 2>&1; then
         stat -c %Y "$1" 2>/dev/null || echo 0
     else
@@ -42,7 +42,7 @@ _mnemo_mtime() {
 # Debounce check.
 if [[ -f "$MARKER" ]]; then
     now=$(date +%s)
-    mtime=$(_mnemo_mtime "$MARKER")
+    mtime=$(_mmry_mtime "$MARKER")
     age=$(( now - mtime ))
     if (( age < DEBOUNCE_SECONDS )); then
         exit 0
@@ -51,8 +51,8 @@ fi
 
 touch "$MARKER"
 
-# Increment the "firings since last save" counter. Resets when mnemo-client.sh
-# calls _mnemo_mark_save_success (which deletes the counter file).
+# Increment the "firings since last save" counter. Resets when mmry-client.sh
+# calls _mmry_mark_save_success (which deletes the counter file).
 firings=0
 if [[ -f "$STOP_COUNT_FILE" ]]; then
     firings=$(head -1 "$STOP_COUNT_FILE" 2>/dev/null | tr -d '[:space:]')

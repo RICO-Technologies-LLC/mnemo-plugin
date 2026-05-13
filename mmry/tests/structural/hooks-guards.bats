@@ -66,15 +66,15 @@ load '../helpers/test-helper'
     [[ -z "$output" ]]
 }
 
-# ── mnemo-client.sh error message ──
+# ── mmry-client.sh error message ──
 
-@test "mnemo-client.sh no-API-key message references /mnemo:setup" {
-    local client_file="$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh"
-    grep -q '/mnemo:setup' "$client_file"
+@test "mmry-client.sh no-API-key message references /mmry:setup" {
+    local client_file="$PLUGIN_ROOT/hooks-handlers/mmry-client.sh"
+    grep -q '/mmry:setup' "$client_file"
 }
 
-@test "mnemo-client.sh no-API-key message does not reference file path" {
-    local client_file="$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh"
-    # The old message contained a file path to mnemo-setup.sh
+@test "mmry-client.sh no-API-key message does not reference file path" {
+    local client_file="$PLUGIN_ROOT/hooks-handlers/mmry-client.sh"
+    # Old message referenced the pre-rebrand file name mnemo-setup.sh; guard against regression
     ! grep -q 'mnemo-setup\.sh' "$client_file"
 }

@@ -7,7 +7,7 @@ create_test_config() {
     local api_url="${1-http://localhost:5291}"
     local api_key="${2-test-api-key-12345}"
     local auth_method="${3-apikey}"
-    local config_file="${MNEMO_CONFIG_FILE:-$TEST_TMPDIR/mnemo-config.json}"
+    local config_file="${MMRY_CONFIG_FILE:-$TEST_TMPDIR/mmry-config.json}"
 
     cat > "$config_file" <<EOF
 {
@@ -21,7 +21,7 @@ EOF
 
 # Create an empty config file (no API key)
 create_empty_config() {
-    local config_file="${MNEMO_CONFIG_FILE:-$TEST_TMPDIR/mnemo-config.json}"
+    local config_file="${MMRY_CONFIG_FILE:-$TEST_TMPDIR/mmry-config.json}"
     cat > "$config_file" <<EOF
 {
   "apiUrl": "http://localhost:5291",

@@ -1,16 +1,16 @@
 ---
 name: memory-system
-description: The Mnemo memory system skill has been loaded. I now have access to the persistent memory store for maintaining context across sessions, computers, and teams. Important decisions, conventions, and context are saved automatically. Say "remember this" to save something anytime, or /mnemo:help for a quick reference.
+description: The MMRY AI memory system skill has been loaded. I now have access to the persistent memory store for maintaining context across sessions, computers, and teams. Important decisions, conventions, and context are saved automatically. Say "remember this" to save something anytime, or /mmry:help for a quick reference.
 ---
 
 # Claude Memory System
 
 ## Overview
-You have access to a persistent memory store via the Mnemo REST API. Use it to maintain context across sessions.
+You have access to a persistent memory store via the MMRY AI REST API. Use it to maintain context across sessions.
 
-**Do NOT use PowerShell — all operations use bash.** The plugin includes pre-built bash scripts for all memory operations. For custom queries, source `mnemo-client.sh` directly.
+**Do NOT use PowerShell — all operations use bash.** The plugin includes pre-built bash scripts for all memory operations. For custom queries, source `mmry-client.sh` directly.
 
-**Automated lifecycle:** The Mnemo plugin handles these events automatically via hooks:
+**Automated lifecycle:** The MMRY AI plugin handles these events automatically via hooks:
 - **Session start** — Memories are loaded automatically (Foundation + universals + directory-matched)
 - **Session end** — You'll be prompted to save any decisions, issues, or notes before exiting
 - **Context compression** — You'll be prompted to save a Momentary "Session Continuity" memory before compression
@@ -39,31 +39,31 @@ All scripts are in `${CLAUDE_PLUGIN_ROOT}/hooks-handlers/`. See the relevant sec
 
 ### Custom Queries (source the client library)
 
-For operations that need custom handling, source `mnemo-client.sh` and call API wrapper functions directly:
+For operations that need custom handling, source `mmry-client.sh` and call API wrapper functions directly:
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
+source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
 
 # Call any API function
-mnemo_search_memories "authentication" "backend"
-echo "$MNEMO_RESPONSE"
+mmry_search_memories "authentication" "backend"
+echo "$MMRY_RESPONSE"
 
 # Get related memories
-mnemo_get_related 42
-echo "$MNEMO_RESPONSE"
+mmry_get_related 42
+echo "$MMRY_RESPONSE"
 
 # Get active sessions
-mnemo_get_active_sessions
-echo "$MNEMO_RESPONSE"
+mmry_get_active_sessions
+echo "$MMRY_RESPONSE"
 ```
 
-Available functions: `mnemo_create_memory`, `mnemo_get_memories`, `mnemo_get_startup_memories`, `mnemo_get_memory_by_id`, `mnemo_search_memories`, `mnemo_deactivate_memory`, `mnemo_reinforce_memory`, `mnemo_create_link`, `mnemo_delete_link`, `mnemo_get_related`, `mnemo_register_session`, `mnemo_get_active_sessions`, `mnemo_get_my_groups`, `mnemo_health`.
+Available functions: `mmry_create_memory`, `mmry_get_memories`, `mmry_get_startup_memories`, `mmry_get_memory_by_id`, `mmry_search_memories`, `mmry_deactivate_memory`, `mmry_reinforce_memory`, `mmry_create_link`, `mmry_delete_link`, `mmry_get_related`, `mmry_register_session`, `mmry_get_active_sessions`, `mmry_get_my_groups`, `mmry_health`.
 
-After each call, check `$MNEMO_HTTP_CODE` and `$MNEMO_RESPONSE` for the result.
+After each call, check `$MMRY_HTTP_CODE` and `$MMRY_RESPONSE` for the result.
 
 ## API Endpoints
 
-All operations go through the Mnemo REST API:
+All operations go through the MMRY AI REST API:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -83,12 +83,12 @@ All operations go through the Mnemo REST API:
 
 ## Mid-Session Loading
 
-Memories are auto-loaded at session start (Foundation + universals + directory-matched). To reload mid-session, use the `/mnemo:load-memories` command, or source the client library:
+Memories are auto-loaded at session start (Foundation + universals + directory-matched). To reload mid-session, use the `/mmry:load-memories` command, or source the client library:
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
-mnemo_get_memories "$PWD" "" "" "" ""
-echo "$MNEMO_RESPONSE"
+source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
+mmry_get_memories "$PWD" "" "" "" ""
+echo "$MMRY_RESPONSE"
 ```
 
 ### Tier Expiration
@@ -183,9 +183,9 @@ For symmetric types (`related`, `contradicts`), the API normalizes order automat
 ### Retrieving Related Memories
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
-mnemo_get_related 42
-echo "$MNEMO_RESPONSE"
+source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
+mmry_get_related 42
+echo "$MMRY_RESPONSE"
 ```
 
 Returns all linked memories in both directions (outgoing and incoming), with `linkType` and `linkDirection` fields. Only returns active memories.
@@ -195,8 +195,8 @@ This is a deliberate call — related memories are NOT automatically loaded at s
 ### Removing Links
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
-mnemo_delete_link 42 87
+source "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
+mmry_delete_link 42 87
 ```
 
 ### When to Link
@@ -290,7 +290,7 @@ Store enough that any Claude session can do a great job working with the team. D
 
 ## Working Directory
 
-`--working-dir` is optional. The working directory is recorded server-side on `dbo.Session` when `session-start.sh` registers the session, and the API resolves it back when a save call includes `--session-id` without an explicit `--working-dir`. When neither is supplied (e.g., scripts invoked outside a Claude Code session), the client falls back to `$PWD`. The previous `${TMPDIR:-/tmp}/mnemo-session-dir*` file mechanism was removed in v1.8 (Bug #9) because concurrent Claude Code sessions on the same machine collided through the shared file.
+`--working-dir` is optional. The working directory is recorded server-side on `dbo.Session` when `session-start.sh` registers the session, and the API resolves it back when a save call includes `--session-id` without an explicit `--working-dir`. When neither is supplied (e.g., scripts invoked outside a Claude Code session), the client falls back to `$PWD`. The previous `${TMPDIR:-/tmp}/mmry-session-dir*` file mechanism was removed in v1.8 (Bug #9) because concurrent Claude Code sessions on the same machine collided through the shared file.
 
 The API records the working directory for directory-scoped loading and traceability. Universal memories (Foundation, Strategic, most Operational) load everywhere regardless of working directory — recording it simply tells future sessions where the memory was created.
 

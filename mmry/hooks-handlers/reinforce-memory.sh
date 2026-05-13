@@ -6,7 +6,7 @@ set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
-source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
+source "${PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
 
 ID="${1:-}"
 if [[ -z "$ID" ]]; then
@@ -14,9 +14,9 @@ if [[ -z "$ID" ]]; then
     exit 1
 fi
 
-if mnemo_reinforce_memory "$ID"; then
+if mmry_reinforce_memory "$ID"; then
     echo "Memory reinforced."
 else
-    _mnemo_format_error
+    _mmry_format_error
     exit 1
 fi

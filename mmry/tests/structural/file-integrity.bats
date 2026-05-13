@@ -5,8 +5,8 @@ load '../helpers/test-helper'
 
 # ── hooks-handlers/ scripts ──
 
-@test "hooks-handlers/mnemo-client.sh exists" {
-    [[ -f "$PLUGIN_ROOT/hooks-handlers/mnemo-client.sh" ]]
+@test "hooks-handlers/mmry-client.sh exists" {
+    [[ -f "$PLUGIN_ROOT/hooks-handlers/mmry-client.sh" ]]
 }
 
 @test "hooks-handlers/session-start.sh exists" {
@@ -87,12 +87,12 @@ load '../helpers/test-helper'
 
 # ── setup/ scripts ──
 
-@test "setup/mnemo-setup.sh exists" {
-    [[ -f "$PLUGIN_ROOT/setup/mnemo-setup.sh" ]]
+@test "setup/mmry-setup.sh exists" {
+    [[ -f "$PLUGIN_ROOT/setup/mmry-setup.sh" ]]
 }
 
-@test "setup/mnemo-setup.bat exists" {
-    [[ -f "$PLUGIN_ROOT/setup/mnemo-setup.bat" ]]
+@test "setup/mmry-setup.bat exists" {
+    [[ -f "$PLUGIN_ROOT/setup/mmry-setup.bat" ]]
 }
 
 @test "setup/install.sh exists" {
@@ -109,8 +109,8 @@ load '../helpers/test-helper'
 
 # ── config example ──
 
-@test "mnemo-config.example.json is valid JSON" {
-    local file="$PLUGIN_ROOT/mnemo-config.example.json"
+@test "mmry-config.example.json is valid JSON" {
+    local file="$PLUGIN_ROOT/mmry-config.example.json"
     if command -v jq &>/dev/null; then
         jq empty "$file"
     else

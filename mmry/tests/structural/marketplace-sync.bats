@@ -2,7 +2,7 @@
 # marketplace-sync.bats — Assert plugin.json version matches marketplace.json version.
 #
 # Why this exists:
-# The plugin has two version fields in the repo. mnemo/.claude-plugin/plugin.json is
+# The plugin has two version fields in the repo. mmry/.claude-plugin/plugin.json is
 # the plugin's own identifier (bumped per feature PR). .claude-plugin/marketplace.json
 # is the marketplace's declaration of the latest version. self-update.sh compares the
 # LOCAL plugin's plugin.json version against the REMOTE marketplace.json version.
@@ -36,10 +36,10 @@ setup() {
     fi
 }
 
-@test "marketplace.json has a mnemo plugin entry with a version field" {
+@test "marketplace.json has a mmry plugin entry with a version field" {
     if command -v jq &>/dev/null; then
         local version
-        version="$(jq -r '.plugins[] | select(.name == "mnemo") | .version' "$MARKETPLACE_JSON")"
+        version="$(jq -r '.plugins[] | select(.name == "mmry") | .version' "$MARKETPLACE_JSON")"
         [[ -n "$version" && "$version" != "null" ]]
     else
         # Fallback: look for the version key anywhere; precision lost but better than nothing.
@@ -47,12 +47,12 @@ setup() {
     fi
 }
 
-@test "plugin.json version equals marketplace.json mnemo plugin version" {
+@test "plugin.json version equals marketplace.json mmry plugin version" {
     local plugin_ver market_ver
 
     if command -v jq &>/dev/null; then
         plugin_ver="$(jq -r '.version' "$PLUGIN_JSON")"
-        market_ver="$(jq -r '.plugins[] | select(.name == "mnemo") | .version' "$MARKETPLACE_JSON")"
+        market_ver="$(jq -r '.plugins[] | select(.name == "mmry") | .version' "$MARKETPLACE_JSON")"
     else
         # Fallback parse: take first "version": "X" occurrence in each file.
         plugin_ver="$(grep -o '"version"[^"]*"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '"[0-9][^"]*"' | tr -d '"')"
@@ -62,7 +62,7 @@ setup() {
     [[ -n "$plugin_ver" && "$plugin_ver" != "null" ]] || \
         { echo "plugin.json version not found"; return 1; }
     [[ -n "$market_ver" && "$market_ver" != "null" ]] || \
-        { echo "marketplace.json mnemo version not found"; return 1; }
+        { echo "marketplace.json mmry version not found"; return 1; }
 
     if [[ "$plugin_ver" != "$market_ver" ]]; then
         echo "VERSION MISMATCH:"

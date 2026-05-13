@@ -1,6 +1,6 @@
 @echo off
-REM mnemo-setup.bat — Windows wrapper for Mnemo setup
-REM Runs mnemo-setup.sh via Git Bash
+REM mmry-setup.bat — Windows wrapper for MMRY AI setup
+REM Runs mmry-setup.sh via Git Bash
 
 where bash >nul 2>nul
 if %ERRORLEVEL% neq 0 (
@@ -10,6 +10,6 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-bash "%~dp0mnemo-setup.sh" %*
+bash "%~dp0mmry-setup.sh" %*
 echo.
 pause

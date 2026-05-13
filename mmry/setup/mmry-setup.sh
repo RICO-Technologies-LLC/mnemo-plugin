@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# mnemo-setup.sh — Interactive Mnemo plugin setup
+# mmry-setup.sh — Interactive MMRY AI plugin setup
 # Uses browser-based device authorization by default.
 # Credential fallback (--email + --password) for CI/automation.
 #
 # Usage:
-#   bash mnemo-setup.sh
-#   bash mnemo-setup.sh --email user@acme.com --password "Pass1234!"
-#   bash mnemo-setup.sh --api-url http://localhost:5291
+#   bash mmry-setup.sh
+#   bash mmry-setup.sh --email user@acme.com --password "Pass1234!"
+#   bash mmry-setup.sh --api-url http://localhost:5291
 
 set -euo pipefail
 
@@ -27,8 +27,8 @@ while [[ $# -gt 0 ]]; do
         --api-url)     API_URL="$2"; shift 2 ;;
         --help|-h)
             echo "Usage:"
-            echo "  Setup (browser):     bash mnemo-setup.sh"
-            echo "  Setup (CI/automation): bash mnemo-setup.sh --email EMAIL --password PASS"
+            echo "  Setup (browser):     bash mmry-setup.sh"
+            echo "  Setup (CI/automation): bash mmry-setup.sh --email EMAIL --password PASS"
             echo "  Options:             [--api-url URL]"
             exit 0 ;;
         *) echo "Unknown argument: $1"; exit 1 ;;
@@ -144,7 +144,7 @@ print_url_block() {
 }
 
 echo ""
-echo "=== Mnemo Setup ==="
+echo "=== MMRY AI Setup ==="
 echo ""
 
 if [[ -n "$EMAIL" && -n "$PASSWORD" ]]; then
@@ -217,7 +217,7 @@ else
         echo ""
     fi
 
-    echo "Setting up Mnemo..."
+    echo "Setting up MMRY AI..."
     echo ""
 
     # Step 1: Request device code
@@ -326,7 +326,7 @@ fi
 
 # Write config file
 CONFIG_DIR="${HOME}/.claude"
-CONFIG_FILE="${CONFIG_DIR}/mnemo-config.json"
+CONFIG_FILE="${CONFIG_DIR}/mmry-config.json"
 
 mkdir -p "$CONFIG_DIR"
 
@@ -348,9 +348,9 @@ fi
 
 echo "  Config written to ${CONFIG_FILE}"
 
-# Auto-approve Mnemo scripts in Claude Code settings
+# Auto-approve MMRY AI scripts in Claude Code settings
 SETTINGS_FILE="${HOME}/.claude/settings.json"
-MNEMO_PERMISSIONS=(
+MMRY_PERMISSIONS=(
     "Bash(*save-memory.sh*)"
     "Bash(*reinforce-memory.sh*)"
     "Bash(*deactivate-memory.sh*)"
@@ -358,7 +358,7 @@ MNEMO_PERMISSIONS=(
     "Bash(*search-memories.sh*)"
     "Bash(*list-groups.sh*)"
     "Bash(*submit-feedback.sh*)"
-    "Bash(*mnemo-client.sh*)"
+    "Bash(*mmry-client.sh*)"
 )
 
 if $HAS_JQ; then
@@ -369,7 +369,7 @@ if $HAS_JQ; then
 
     # Build jq filter to add permissions
     JQ_FILTER='.permissions //= {} | .permissions.allow //= []'
-    for perm in "${MNEMO_PERMISSIONS[@]}"; do
+    for perm in "${MMRY_PERMISSIONS[@]}"; do
         JQ_FILTER+=" | if (.permissions.allow | index(\"${perm}\")) then . else .permissions.allow += [\"${perm}\"] end"
     done
 
@@ -390,7 +390,7 @@ else
       "Bash(*search-memories.sh*)",
       "Bash(*list-groups.sh*)",
       "Bash(*submit-feedback.sh*)",
-      "Bash(*mnemo-client.sh*)"
+      "Bash(*mmry-client.sh*)"
     ]
   }
 }
@@ -420,7 +420,7 @@ perms = [
     "Bash(*search-memories.sh*)",
     "Bash(*list-groups.sh*)",
     "Bash(*submit-feedback.sh*)",
-    "Bash(*mnemo-client.sh*)"
+    "Bash(*mmry-client.sh*)"
 ]
 with open(sf) as f:
     data = json.load(f)
@@ -439,7 +439,7 @@ PYEOF
         else
             echo "  Note: Could not auto-configure permissions (jq and python not found)."
             echo "  Add these to ${SETTINGS_FILE} under permissions.allow:"
-            for perm in "${MNEMO_PERMISSIONS[@]}"; do
+            for perm in "${MMRY_PERMISSIONS[@]}"; do
                 echo "    \"${perm}\""
             done
         fi
@@ -448,7 +448,7 @@ fi
 
 # Install plugin (skip for marketplace/stable installs — already handled by Claude Code)
 SCRIPT_DIR_RESOLVED="$(cd "$SCRIPT_DIR" && pwd)"
-if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* || "$SCRIPT_DIR_RESOLVED" == *"/.claude/mnemo/"* ]]; then
+if [[ "$SCRIPT_DIR_RESOLVED" == *"/.claude/plugins/cache/"* || "$SCRIPT_DIR_RESOLVED" == *"/.claude/mmry/"* ]]; then
     echo "  Plugin already installed via marketplace."
 else
     echo "Installing plugin..."
@@ -476,7 +476,7 @@ else
     esac
 
     # Clear stale cache (local installs only)
-    CACHE_DIR="${HOME}/.claude/plugins/cache/internal-plugins/mnemo"
+    CACHE_DIR="${HOME}/.claude/plugins/cache/internal-plugins/mmry"
     if [[ -d "$CACHE_DIR" ]]; then
         rm -rf "$CACHE_DIR"
         echo "  Plugin cache cleared."
@@ -486,9 +486,9 @@ fi
 echo ""
 echo "=== You're all set ==="
 echo ""
-echo "Mnemo will remember your decisions, conventions, and context across every"
+echo "MMRY AI will remember your decisions, conventions, and context across every"
 echo "session. You don't need to do anything special — it works in the background."
 echo ""
 echo "Restart Claude Code to get started."
 echo ""
-echo "Anytime you need help, type: /mnemo:help"
+echo "Anytime you need help, type: /mmry:help"

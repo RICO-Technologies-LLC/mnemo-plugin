@@ -23,13 +23,13 @@ setup() {
     fi
 }
 
-@test "plugin.json has name field = mnemo" {
+@test "plugin.json has name field = mmry" {
     if command -v jq &>/dev/null; then
         local name
         name="$(jq -r '.name' "$PLUGIN_JSON")"
-        [[ "$name" == "mnemo" ]]
+        [[ "$name" == "mmry" ]]
     else
-        grep -q '"name".*"mnemo"' "$PLUGIN_JSON"
+        grep -q '"name".*"mmry"' "$PLUGIN_JSON"
     fi
 }
 

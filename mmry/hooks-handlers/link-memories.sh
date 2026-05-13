@@ -6,7 +6,7 @@ set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
-source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
+source "${PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
 
 SOURCE_ID="${1:-}"
 TARGET_ID="${2:-}"
@@ -17,9 +17,9 @@ if [[ -z "$SOURCE_ID" || -z "$TARGET_ID" || -z "$LINK_TYPE" ]]; then
     exit 1
 fi
 
-if mnemo_create_link "$SOURCE_ID" "$TARGET_ID" "$LINK_TYPE"; then
+if mmry_create_link "$SOURCE_ID" "$TARGET_ID" "$LINK_TYPE"; then
     echo "Memories linked."
 else
-    _mnemo_format_error
+    _mmry_format_error
     exit 1
 fi

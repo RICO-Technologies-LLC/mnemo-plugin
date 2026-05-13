@@ -9,14 +9,14 @@ _api() {
     local method="$1" path="$2" body="${3:-}"
     local curl_args=(-s -w '\n%{http_code}' --connect-timeout 10 --max-time 25
         -X "$method"
-        -H "X-Api-Key: ${MNEMO_INTEGRATION_API_KEY}"
+        -H "X-Api-Key: ${MMRY_INTEGRATION_API_KEY}"
         -H "Content-Type: application/json")
     [[ -n "$body" ]] && curl_args+=(-d "$body")
     curl "${curl_args[@]}" "${INTEGRATION_URL}${path}"
 }
 
 @test "sessions: register a session (201)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     local session_id="bats-test-$(date +%s)"
     echo "$session_id" > "$BATS_FILE_TMPDIR/session_id"
     local response
@@ -27,7 +27,7 @@ _api() {
 }
 
 @test "sessions: list active sessions includes registered session" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/session_id" ]] && skip "No session ID"
     local session_id
     session_id="$(cat "$BATS_FILE_TMPDIR/session_id")"
@@ -42,7 +42,7 @@ _api() {
 }
 
 @test "sessions: re-register same session ID updates it" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/session_id" ]] && skip "No session ID"
     local session_id
     session_id="$(cat "$BATS_FILE_TMPDIR/session_id")"

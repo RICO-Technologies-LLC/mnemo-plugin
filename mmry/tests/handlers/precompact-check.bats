@@ -4,29 +4,29 @@
 load '../helpers/test-helper'
 
 @test "precompact-check: first invocation outputs block JSON and exits 2" {
-    rm -f "$TEST_TMPDIR/.mnemo-precompact-checked"
+    rm -f "$TEST_TMPDIR/.mmry-precompact-checked"
     run bash "$PLUGIN_ROOT/hooks-handlers/precompact-check.sh"
     [[ "$status" -eq 2 ]]
     [[ "$output" == *'"decision":"block"'* ]]
 }
 
 @test "precompact-check: creates marker file" {
-    rm -f "$TEST_TMPDIR/.mnemo-precompact-checked"
+    rm -f "$TEST_TMPDIR/.mmry-precompact-checked"
     bash "$PLUGIN_ROOT/hooks-handlers/precompact-check.sh" 2>/dev/null || true
-    [[ -f "$TEST_TMPDIR/.mnemo-precompact-checked" ]]
+    [[ -f "$TEST_TMPDIR/.mmry-precompact-checked" ]]
 }
 
 @test "precompact-check: second invocation within 120s exits 0 and removes marker" {
-    rm -f "$TEST_TMPDIR/.mnemo-precompact-checked"
-    touch "$TEST_TMPDIR/.mnemo-precompact-checked"
+    rm -f "$TEST_TMPDIR/.mmry-precompact-checked"
+    touch "$TEST_TMPDIR/.mmry-precompact-checked"
     run bash "$PLUGIN_ROOT/hooks-handlers/precompact-check.sh"
     [[ "$status" -eq 0 ]]
     # Marker should be removed
-    [[ ! -f "$TEST_TMPDIR/.mnemo-precompact-checked" ]]
+    [[ ! -f "$TEST_TMPDIR/.mmry-precompact-checked" ]]
 }
 
 @test "precompact-check: old marker (>120s) triggers block again" {
-    touch -t 202001010000.00 "$TEST_TMPDIR/.mnemo-precompact-checked"
+    touch -t 202001010000.00 "$TEST_TMPDIR/.mmry-precompact-checked"
     run bash "$PLUGIN_ROOT/hooks-handlers/precompact-check.sh"
     [[ "$status" -eq 2 ]]
     [[ "$output" == *'"decision":"block"'* ]]

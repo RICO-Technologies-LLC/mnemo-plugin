@@ -8,7 +8,7 @@
 #   2. ${PLUGIN_ROOT}/.last-self-update                    (legacy install with prior update)
 #   3. None of the above                                   (fresh legacy install, bootstrap)
 #
-# Why the fallback: pre-marketplace installs at ~/.claude/mnemo/ have no
+# Why the fallback: pre-marketplace installs at ~/.claude/mmry/ have no
 # .claude-plugin/ subdirectory. Without a fallback, self-update.sh silently
 # bailed on every run for those users. The v1.8 release shipped fixes that
 # never reached them. The sentinel file gives legacy installs a version
@@ -19,15 +19,15 @@ set -euo pipefail
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOCAL_VERSION_FILE="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
 LAST_UPDATE_SENTINEL="${PLUGIN_ROOT}/.last-self-update"
-MARKETPLACE_URL="https://raw.githubusercontent.com/RICO-Technologies-LLC/mnemo-plugin/master/.claude-plugin/marketplace.json"
-REPO_ARCHIVE_URL="https://github.com/RICO-Technologies-LLC/mnemo-plugin/archive/refs/heads/master.tar.gz"
+MARKETPLACE_URL="https://raw.githubusercontent.com/MMRY-AI/mmry-plugin/master/.claude-plugin/marketplace.json"
+REPO_ARCHIVE_URL="https://github.com/MMRY-AI/mmry-plugin/archive/refs/heads/master.tar.gz"
 
 TMPDIR="${TMPDIR:-/tmp}"
-UPDATE_MARKER="${TMPDIR}/.mnemo-update-checked"
+UPDATE_MARKER="${TMPDIR}/.mmry-update-checked"
 
 # Logger — one-line stderr messages so silent bail conditions become discoverable.
 log() {
-    echo "mnemo self-update: $*" >&2
+    echo "mmry self-update: $*" >&2
 }
 
 # Debounce — only check once per hour
@@ -96,8 +96,8 @@ if [[ "$local_version" == "$remote_version" ]]; then
 fi
 
 # Version mismatch — download and apply update.
-tmp_archive="$(mktemp "${TMPDIR}/mnemo-update-XXXXXX.tar.gz")"
-tmp_extract="$(mktemp -d "${TMPDIR}/mnemo-update-XXXXXX")"
+tmp_archive="$(mktemp "${TMPDIR}/mmry-update-XXXXXX.tar.gz")"
+tmp_extract="$(mktemp -d "${TMPDIR}/mmry-update-XXXXXX")"
 
 cleanup() {
     rm -rf "$tmp_archive" "$tmp_extract"
@@ -117,9 +117,9 @@ if ! tar -xzf "$tmp_archive" -C "$tmp_extract" 2>/dev/null; then
 fi
 
 # Find the extracted directory (GitHub archives as repo-name-branch/)
-extracted_dir="$(find "$tmp_extract" -maxdepth 1 -type d -name 'mnemo-plugin-*' | head -1)"
-if [[ -z "$extracted_dir" || ! -d "${extracted_dir}/mnemo" ]]; then
-    log "extracted archive missing expected mnemo/ directory"
+extracted_dir="$(find "$tmp_extract" -maxdepth 1 -type d -name 'mmry-plugin-*' | head -1)"
+if [[ -z "$extracted_dir" || ! -d "${extracted_dir}/mmry" ]]; then
+    log "extracted archive missing expected mmry/ directory"
     exit 0
 fi
 
@@ -128,18 +128,18 @@ fi
 # installs never receive the plugin.json that bootstraps version detection on the
 # next run. Enable dotglob locally so the migration happens automatically.
 shopt -s dotglob
-cp -r "${extracted_dir}/mnemo/"* "${PLUGIN_ROOT}/" 2>/dev/null || {
+cp -r "${extracted_dir}/mmry/"* "${PLUGIN_ROOT}/" 2>/dev/null || {
     shopt -u dotglob
     log "failed to copy update into plugin root"
     exit 0
 }
 shopt -u dotglob
 
-# Also update the installed copy if it exists at ~/.claude/mnemo/.
-INSTALLED_DIR="${HOME}/.claude/mnemo"
+# Also update the installed copy if it exists at ~/.claude/mmry/.
+INSTALLED_DIR="${HOME}/.claude/mmry"
 if [[ -d "$INSTALLED_DIR" && "$PLUGIN_ROOT" != "$INSTALLED_DIR" ]]; then
     shopt -s dotglob
-    cp -r "${extracted_dir}/mnemo/"* "${INSTALLED_DIR}/" 2>/dev/null || true
+    cp -r "${extracted_dir}/mmry/"* "${INSTALLED_DIR}/" 2>/dev/null || true
     shopt -u dotglob
 fi
 
@@ -150,5 +150,5 @@ if [[ -d "$INSTALLED_DIR" && "$PLUGIN_ROOT" != "$INSTALLED_DIR" ]]; then
     echo "$remote_version" > "${INSTALLED_DIR}/.last-self-update" 2>/dev/null || true
 fi
 
-echo "Mnemo plugin updated: ${local_version} -> ${remote_version} (source: ${local_version_source})" >&2
+echo "MMRY AI plugin updated: ${local_version} -> ${remote_version} (source: ${local_version_source})" >&2
 exit 0

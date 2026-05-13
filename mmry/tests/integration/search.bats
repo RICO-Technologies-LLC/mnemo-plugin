@@ -9,14 +9,14 @@ _api() {
     local method="$1" path="$2" body="${3:-}"
     local curl_args=(-s -w '\n%{http_code}' --connect-timeout 10 --max-time 25
         -X "$method"
-        -H "X-Api-Key: ${MNEMO_INTEGRATION_API_KEY}"
+        -H "X-Api-Key: ${MMRY_INTEGRATION_API_KEY}"
         -H "Content-Type: application/json")
     [[ -n "$body" ]] && curl_args+=(-d "$body")
     curl "${curl_args[@]}" "${INTEGRATION_URL}${path}"
 }
 
 @test "search: create memory with unique keyword" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     local keyword="BATSUnique$(date +%s)"
     echo "$keyword" > "$BATS_FILE_TMPDIR/search_keyword"
     local response
@@ -36,7 +36,7 @@ _api() {
 }
 
 @test "search: find memory by keyword" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/search_keyword" ]] && skip "No keyword"
     local keyword
     keyword="$(cat "$BATS_FILE_TMPDIR/search_keyword")"
@@ -51,7 +51,7 @@ _api() {
 }
 
 @test "search: no results returns empty array" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     local response
     response="$(_api GET "/api/memories/search?q=XYZNonExistentKeyword99999")"
     local code
@@ -64,7 +64,7 @@ _api() {
 
 # Cleanup
 teardown_file() {
-    if [[ -n "${MNEMO_INTEGRATION_API_KEY:-}" && -f "$BATS_FILE_TMPDIR/search_memory_id" ]]; then
+    if [[ -n "${MMRY_INTEGRATION_API_KEY:-}" && -f "$BATS_FILE_TMPDIR/search_memory_id" ]]; then
         local mid
         mid="$(cat "$BATS_FILE_TMPDIR/search_memory_id")"
         _api DELETE "/api/memories/${mid}" > /dev/null 2>&1 || true

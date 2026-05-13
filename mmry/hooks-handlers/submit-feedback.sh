@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# submit-feedback.sh — Submit feedback (bug or feature request) via Mnemo API.
+# submit-feedback.sh — Submit feedback (bug or feature request) via MMRY AI API.
 # Usage: bash submit-feedback.sh --type T --title T --description D [options]
 
 set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
-source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
+source "${PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
 
 # Parse arguments
 TYPE="" TITLE="" DESCRIPTION="" COMPONENT="" REPRO_STEPS="" ENVIRONMENT=""
@@ -29,10 +29,10 @@ if [[ -z "$TYPE" || -z "$TITLE" || -z "$DESCRIPTION" ]]; then
     exit 1
 fi
 
-if mnemo_submit_feedback "$TYPE" "$TITLE" "$DESCRIPTION" \
+if mmry_submit_feedback "$TYPE" "$TITLE" "$DESCRIPTION" \
     "$COMPONENT" "$REPRO_STEPS" "$ENVIRONMENT"; then
     echo "Feedback submitted."
 else
-    _mnemo_format_error "feedback"
+    _mmry_format_error "feedback"
     exit 1
 fi

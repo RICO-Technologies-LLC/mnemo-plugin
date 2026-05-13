@@ -1,10 +1,10 @@
-# Mnemo Help
+# MMRY AI Help
 
-Mnemo is your memory. It remembers your decisions, conventions, preferences, and context across every session — so you never have to repeat yourself.
+MMRY AI is your memory. It remembers your decisions, conventions, preferences, and context across every session — so you never have to repeat yourself.
 
 ## How It Works
 
-You don't need to do anything special. Mnemo runs quietly in the background:
+You don't need to do anything special. MMRY AI runs quietly in the background:
 
 - **When a session starts**, your memories load automatically. Claude already knows your context.
 - **When a session ends**, Claude is prompted to save anything important before closing.
@@ -19,7 +19,7 @@ You can talk to Claude naturally about your memories:
 - **"Save a Foundation memory about our tech stack."** — Foundation memories never expire. Use them for things that define who you are.
 - **"What do you remember about our deployment process?"** — Claude searches your memories.
 - **"Forget the memory about the old API endpoint."** — Claude deactivates it.
-- **"Load my memories."** — Reloads your memories mid-session (same as `/mnemo:load-memories`).
+- **"Load my memories."** — Reloads your memories mid-session (same as `/mmry:load-memories`).
 
 ## Memory Types
 

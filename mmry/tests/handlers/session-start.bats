@@ -8,10 +8,10 @@ setup() {
     setup_mock_curl
     create_test_config "http://localhost:5291" "test-api-key" "apikey"
     export CLAUDE_SESSION_ID="test-session-123"
-    # Prevent session-start from copying files to ~/.claude/mnemo
+    # Prevent session-start from copying files to ~/.claude/mmry
     export HOME="$TEST_TMPDIR/fakehome"
-    mkdir -p "$HOME/.claude/mnemo/hooks-handlers"
-    mkdir -p "$HOME/.claude/mnemo/setup"
+    mkdir -p "$HOME/.claude/mmry/hooks-handlers"
+    mkdir -p "$HOME/.claude/mmry/setup"
 }
 
 @test "session-start: outputs hookSpecificOutput JSON on success" {
@@ -30,7 +30,7 @@ setup() {
 
 @test "session-start: creates temp markdown file with memory content" {
     bash "$PLUGIN_ROOT/hooks-handlers/session-start.sh" > /dev/null 2>&1
-    local mem_file="$TEST_TMPDIR/mnemo-memories.md"
+    local mem_file="$TEST_TMPDIR/mmry-memories.md"
     [[ -f "$mem_file" ]]
 }
 
@@ -40,7 +40,7 @@ setup() {
     export MOCK_CURL_HTTP_CODE="200"
     run bash "$PLUGIN_ROOT/hooks-handlers/session-start.sh"
     [[ "$status" -eq 0 ]]
-    [[ "$output" == *'Welcome to Mnemo'* ]] || [[ "$output" == *'fresh start'* ]]
+    [[ "$output" == *'Welcome to MMRY AI'* ]] || [[ "$output" == *'fresh start'* ]]
 }
 
 @test "session-start: handles API error gracefully (exits 0)" {
@@ -63,7 +63,7 @@ setup() {
     # Create config with empty API key
     create_test_config "http://localhost:5291" "" "apikey"
     # Also clear the env var
-    export MNEMO_API_KEY=""
+    export MMRY_API_KEY=""
     run bash "$PLUGIN_ROOT/hooks-handlers/session-start.sh"
     [[ "$status" -eq 0 ]]
     [[ "$output" == *'hookSpecificOutput'* ]]

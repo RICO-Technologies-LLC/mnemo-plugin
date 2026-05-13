@@ -3,18 +3,18 @@ Save a memory to MMRY AI. If the user provided a description after the command, 
 ## How to Save
 
 1. Determine what to save:
-   - If the user wrote something after `/mnemo:save`, save that specific thing.
-   - If they just typed `/mnemo:save` with nothing else, review the recent conversation and identify the most important decision, convention, fact, or insight worth persisting.
+   - If the user wrote something after `/mmry:save`, save that specific thing.
+   - If they just typed `/mmry:save` with nothing else, review the recent conversation and identify the most important decision, convention, fact, or insight worth persisting.
 
-2. Run the save script. Use the Bash tool. Pass the substantive content as `--context`. Mnemo's server processes the context and decides how to file it. **Important:** Use the heredoc pattern shown below to prevent bash from expanding `$`, backticks, or other special characters in the content:
+2. Run the save script. Use the Bash tool. Pass the substantive content as `--context`. MMRY AI's server processes the context and decides how to file it. **Important:** Use the heredoc pattern shown below to prevent bash from expanding `$`, backticks, or other special characters in the content:
 
    ```
-   _mnemo_context=$(cat <<'MNEMO_CONTEXT'
+   _mmry_context=$(cat <<'MMRY_CONTEXT'
    CONTEXT
-   MNEMO_CONTEXT
+   MMRY_CONTEXT
    )
-   bash "${HOME}/.claude/mnemo/hooks-handlers/save-memory.sh" \
-     --context "$_mnemo_context" \
+   bash "${HOME}/.claude/mmry/hooks-handlers/save-memory.sh" \
+     --context "$_mmry_context" \
      --session-id "$CLAUDE_SESSION_ID"
    ```
 

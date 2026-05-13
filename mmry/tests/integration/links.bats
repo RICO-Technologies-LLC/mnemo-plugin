@@ -9,7 +9,7 @@ _api() {
     local method="$1" path="$2" body="${3:-}"
     local curl_args=(-s -w '\n%{http_code}' --connect-timeout 10 --max-time 25
         -X "$method"
-        -H "X-Api-Key: ${MNEMO_INTEGRATION_API_KEY}"
+        -H "X-Api-Key: ${MMRY_INTEGRATION_API_KEY}"
         -H "Content-Type: application/json")
     [[ -n "$body" ]] && curl_args+=(-d "$body")
     curl "${curl_args[@]}" "${INTEGRATION_URL}${path}"
@@ -25,7 +25,7 @@ _extract_id() {
 }
 
 setup_file() {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && return
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && return
 
     # Create two memories to link
     local ts
@@ -45,7 +45,7 @@ setup_file() {
 }
 
 @test "links: create link (201)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/link_source_id" ]] && skip "No source memory"
     local src
     src="$(cat "$BATS_FILE_TMPDIR/link_source_id")"
@@ -59,7 +59,7 @@ setup_file() {
 }
 
 @test "links: get related returns linked memory" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/link_source_id" ]] && skip "No source memory"
     local src
     src="$(cat "$BATS_FILE_TMPDIR/link_source_id")"
@@ -76,7 +76,7 @@ setup_file() {
 }
 
 @test "links: delete link (204)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/link_source_id" ]] && skip "No source memory"
     local src
     src="$(cat "$BATS_FILE_TMPDIR/link_source_id")"
@@ -90,7 +90,7 @@ setup_file() {
 }
 
 @test "links: get related returns empty after deletion" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/link_source_id" ]] && skip "No source memory"
     local src
     src="$(cat "$BATS_FILE_TMPDIR/link_source_id")"
@@ -106,7 +106,7 @@ setup_file() {
 
 # Cleanup
 teardown_file() {
-    if [[ -n "${MNEMO_INTEGRATION_API_KEY:-}" ]]; then
+    if [[ -n "${MMRY_INTEGRATION_API_KEY:-}" ]]; then
         [[ -f "$BATS_FILE_TMPDIR/link_source_id" ]] && _api DELETE "/api/memories/$(cat "$BATS_FILE_TMPDIR/link_source_id")" > /dev/null 2>&1 || true
         [[ -f "$BATS_FILE_TMPDIR/link_target_id" ]] && _api DELETE "/api/memories/$(cat "$BATS_FILE_TMPDIR/link_target_id")" > /dev/null 2>&1 || true
     fi

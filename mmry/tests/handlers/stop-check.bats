@@ -5,9 +5,9 @@ load '../helpers/test-helper'
 
 setup() {
     # Each test starts with clean state files.
-    rm -f "$TEST_TMPDIR/.mnemo-stop-checked"
-    rm -f "$TEST_TMPDIR/.mnemo-stop-count"
-    rm -f "$TEST_TMPDIR/.mnemo-last-save"
+    rm -f "$TEST_TMPDIR/.mmry-stop-checked"
+    rm -f "$TEST_TMPDIR/.mmry-stop-count"
+    rm -f "$TEST_TMPDIR/.mmry-last-save"
 }
 
 # --- Debounce and basic block contract -------------------------------------
@@ -20,12 +20,12 @@ setup() {
 
 @test "stop-check: creates marker file" {
     bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh" 2>/dev/null || true
-    [[ -f "$TEST_TMPDIR/.mnemo-stop-checked" ]]
+    [[ -f "$TEST_TMPDIR/.mmry-stop-checked" ]]
 }
 
 @test "stop-check: second invocation within debounce window exits 0" {
     # Pre-stamp a fresh marker.
-    touch "$TEST_TMPDIR/.mnemo-stop-checked"
+    touch "$TEST_TMPDIR/.mmry-stop-checked"
     run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
     [[ "$status" -eq 0 ]]
     [[ -z "$output" ]]
@@ -33,7 +33,7 @@ setup() {
 
 @test "stop-check: old marker (>900s) triggers block again" {
     # #29912 — debounce extended from 120s to 900s. Use a clearly-old marker.
-    touch -t 202001010000.00 "$TEST_TMPDIR/.mnemo-stop-checked"
+    touch -t 202001010000.00 "$TEST_TMPDIR/.mmry-stop-checked"
     run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
     [[ "$status" -eq 2 ]]
     [[ "$output" == *'"decision":"block"'* ]]
@@ -63,20 +63,20 @@ setup() {
 @test "stop-check: increments firings counter on each unique trigger" {
     bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh" >/dev/null 2>&1 || true
     local first
-    first="$(cat "$TEST_TMPDIR/.mnemo-stop-count" 2>/dev/null)"
+    first="$(cat "$TEST_TMPDIR/.mmry-stop-count" 2>/dev/null)"
     [[ "$first" == "1" ]]
 
     # Force the marker old so the next call is not debounced.
-    touch -t 202001010000.00 "$TEST_TMPDIR/.mnemo-stop-checked"
+    touch -t 202001010000.00 "$TEST_TMPDIR/.mmry-stop-checked"
     bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh" >/dev/null 2>&1 || true
     local second
-    second="$(cat "$TEST_TMPDIR/.mnemo-stop-count" 2>/dev/null)"
+    second="$(cat "$TEST_TMPDIR/.mmry-stop-count" 2>/dev/null)"
     [[ "$second" == "2" ]]
 }
 
 @test "stop-check: compliance escalation triggers at 3+ firings without save" {
     # Pre-set counter to 2 so this firing becomes the 3rd.
-    echo "2" > "$TEST_TMPDIR/.mnemo-stop-count"
+    echo "2" > "$TEST_TMPDIR/.mmry-stop-count"
     run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
     [[ "$status" -eq 2 ]]
     [[ "$output" == *'You have skipped 3 Stop firings without saving'* ]]
@@ -89,10 +89,10 @@ setup() {
     [[ "$output" != *'You have skipped'* ]]
 }
 
-@test "stop-check: surfaces last-save anchor when .mnemo-last-save exists" {
+@test "stop-check: surfaces last-save anchor when .mmry-last-save exists" {
     # 5-minute-old save.
     python_or_date_ts=$(($(date +%s) - 300))
-    echo "$python_or_date_ts" > "$TEST_TMPDIR/.mnemo-last-save"
+    echo "$python_or_date_ts" > "$TEST_TMPDIR/.mmry-last-save"
 
     run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
     [[ "$status" -eq 2 ]]
@@ -107,9 +107,9 @@ setup() {
 }
 
 @test "stop-check: successful save (deleting counter file) drops escalation" {
-    # Counter reset is what mnemo-client.sh's _mnemo_mark_save_success does.
-    echo "5" > "$TEST_TMPDIR/.mnemo-stop-count"
-    rm -f "$TEST_TMPDIR/.mnemo-stop-count"  # simulate save success reset
+    # Counter reset is what mmry-client.sh's _mmry_mark_save_success does.
+    echo "5" > "$TEST_TMPDIR/.mmry-stop-count"
+    rm -f "$TEST_TMPDIR/.mmry-stop-count"  # simulate save success reset
     run bash "$PLUGIN_ROOT/hooks-handlers/stop-check.sh"
     [[ "$status" -eq 2 ]]
     [[ "$output" != *'You have skipped'* ]]

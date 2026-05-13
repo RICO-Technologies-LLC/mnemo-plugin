@@ -8,7 +8,7 @@
 #     --visibility, --permission-group-id, --supersedes, and legacy --tier,
 #     --category, --scope (all forwarded as suggestions; the server classifies).
 #   - On success: prints the server-supplied ack ("message" field in the 202
-#     response) or "Memory sent to Mnemo for processing." as fallback.
+#     response) or "Memory sent to MMRY AI for processing." as fallback.
 #   - On error: prints an Error line and exits non-zero.
 #   - Never prints memory IDs (the server's response is not echoed verbatim).
 #
@@ -20,7 +20,7 @@ load '../helpers/mock-config'
 
 # Pattern matched by every successful save's stdout. Either the server's ack
 # message, or the script's fallback string.
-SAVE_SUCCESS_PATTERN='Memory sent to Mnemo'
+SAVE_SUCCESS_PATTERN='Memory sent to MMRY AI'
 
 setup() {
     setup_mock_curl

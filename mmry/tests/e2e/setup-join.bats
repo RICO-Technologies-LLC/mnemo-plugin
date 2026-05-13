@@ -15,11 +15,11 @@ setup() {
     mkdir -p "$HOME/.claude"
 
     # Copy setup script to a marketplace-like path so it skips install.sh
-    # (the script checks if its path contains /.claude/mnemo/)
-    mkdir -p "$HOME/.claude/mnemo/setup"
-    cp "$PLUGIN_ROOT/setup/mnemo-setup.sh" "$HOME/.claude/mnemo/setup/"
-    chmod +x "$HOME/.claude/mnemo/setup/mnemo-setup.sh"
-    SETUP_SCRIPT="$HOME/.claude/mnemo/setup/mnemo-setup.sh"
+    # (the script checks if its path contains /.claude/mmry/)
+    mkdir -p "$HOME/.claude/mmry/setup"
+    cp "$PLUGIN_ROOT/setup/mmry-setup.sh" "$HOME/.claude/mmry/setup/"
+    chmod +x "$HOME/.claude/mmry/setup/mmry-setup.sh"
+    SETUP_SCRIPT="$HOME/.claude/mmry/setup/mmry-setup.sh"
 
     # Mock sleep (no-op) to prevent polling delays in device auth tests
     local mock_dir="$TEST_TMPDIR/mock-bin"
@@ -57,7 +57,7 @@ _mock_endpoint() {
         --join \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     [[ -f "$config" ]]
     grep -q '"apiKey"' "$config"
     grep -q 'mock-device-auth-key-xyz789' "$config"
@@ -95,7 +95,7 @@ _mock_endpoint() {
         --join \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     grep -q 'localhost:5291' "$config"
 }
 
@@ -104,7 +104,7 @@ _mock_endpoint() {
         --join \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     grep -q '"authMethod"' "$config"
     grep -q 'apikey' "$config"
 }
@@ -179,7 +179,7 @@ _mock_endpoint() {
         --password "SecurePass1!" \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     [[ -f "$config" ]]
     grep -q '"apiKey"' "$config"
     grep -q 'mock-generated-key-abc123' "$config"
@@ -192,7 +192,7 @@ _mock_endpoint() {
         --password "SecurePass1!" \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     grep -q 'localhost:5291' "$config"
 }
 
@@ -203,7 +203,7 @@ _mock_endpoint() {
         --password "SecurePass1!" \
         --api-url "http://localhost:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     grep -q '"authMethod"' "$config"
     grep -q 'apikey' "$config"
 }
@@ -222,7 +222,7 @@ _mock_endpoint() {
     grep -q 'deactivate-memory.sh' "$settings"
     grep -q 'link-memories.sh' "$settings"
     grep -q 'search-memories.sh' "$settings"
-    grep -q 'mnemo-client.sh' "$settings"
+    grep -q 'mmry-client.sh' "$settings"
 }
 
 @test "join: credential fallback calls login API then apikey API" {
@@ -336,12 +336,12 @@ _mock_endpoint() {
     grep -q 'custom-server:9999' "$TEST_TMPDIR/curl-log.txt"
 }
 
-@test "join: config file written to ~/.claude/mnemo-config.json" {
+@test "join: config file written to ~/.claude/mmry-config.json" {
     bash "$SETUP_SCRIPT" \
         --join \
         --api-url "http://localhost:5291" 2>&1
 
-    [[ -f "$HOME/.claude/mnemo-config.json" ]]
+    [[ -f "$HOME/.claude/mmry-config.json" ]]
 }
 
 @test "setup: device auth works without --join flag" {
@@ -392,7 +392,7 @@ _mock_endpoint() {
         --join \
         --api-url "http://server-two:5291" 2>&1
 
-    local config="$HOME/.claude/mnemo-config.json"
+    local config="$HOME/.claude/mmry-config.json"
     grep -q 'server-two' "$config"
     ! grep -q 'server-one' "$config"
 }

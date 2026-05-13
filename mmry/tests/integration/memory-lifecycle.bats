@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # memory-lifecycle.bats — Create -> retrieve -> reinforce -> deactivate (live API).
-# Requires MNEMO_INTEGRATION_API_KEY env var.
+# Requires MMRY_INTEGRATION_API_KEY env var.
 
 load '../helpers/test-helper'
 
@@ -8,8 +8,8 @@ INTEGRATION_URL="https://mnemo-integration-d8h6bzh2bxgrc3e4.westus3-01.azurewebs
 MEMORY_ID=""
 
 setup_file() {
-    if [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]]; then
-        skip "MNEMO_INTEGRATION_API_KEY not set"
+    if [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]]; then
+        skip "MMRY_INTEGRATION_API_KEY not set"
     fi
 }
 
@@ -17,14 +17,14 @@ _api() {
     local method="$1" path="$2" body="${3:-}"
     local curl_args=(-s -w '\n%{http_code}' --connect-timeout 10 --max-time 25
         -X "$method"
-        -H "X-Api-Key: ${MNEMO_INTEGRATION_API_KEY}"
+        -H "X-Api-Key: ${MMRY_INTEGRATION_API_KEY}"
         -H "Content-Type: application/json")
     [[ -n "$body" ]] && curl_args+=(-d "$body")
     curl "${curl_args[@]}" "${INTEGRATION_URL}${path}"
 }
 
 @test "lifecycle: create a memory (201)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     local unique_topic="BATS-Test-$(date +%s)"
     local response
     response="$(_api POST "/api/memories" "{\"memoryTier\":\"Momentary\",\"category\":\"Fact\",\"scope\":\"test\",\"topic\":\"${unique_topic}\",\"content\":\"Integration test memory\"}")"
@@ -46,7 +46,7 @@ _api() {
 }
 
 @test "lifecycle: get memory by ID (200)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/memory_id" ]] && skip "No memory ID from create test"
     local mid
     mid="$(cat "$BATS_FILE_TMPDIR/memory_id")"
@@ -58,7 +58,7 @@ _api() {
 }
 
 @test "lifecycle: reinforce memory (204)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/memory_id" ]] && skip "No memory ID from create test"
     local mid
     mid="$(cat "$BATS_FILE_TMPDIR/memory_id")"
@@ -70,7 +70,7 @@ _api() {
 }
 
 @test "lifecycle: deactivate memory (204)" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/memory_id" ]] && skip "No memory ID from create test"
     local mid
     mid="$(cat "$BATS_FILE_TMPDIR/memory_id")"
@@ -82,7 +82,7 @@ _api() {
 }
 
 @test "lifecycle: deactivated memory returns 404" {
-    [[ -z "${MNEMO_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
+    [[ -z "${MMRY_INTEGRATION_API_KEY:-}" ]] && skip "No API key"
     [[ ! -f "$BATS_FILE_TMPDIR/memory_id" ]] && skip "No memory ID from create test"
     local mid
     mid="$(cat "$BATS_FILE_TMPDIR/memory_id")"

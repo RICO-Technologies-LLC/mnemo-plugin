@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# save-memory.sh — Send context to Mnemo API for server-side processing.
+# save-memory.sh — Send context to MMRY AI API for server-side processing.
 # Thin client: the server decides tier, category, scope, and formatting.
 # Usage: bash save-memory.sh --context "..." [--working-dir DIR] [--session-id ID]
 
@@ -7,7 +7,7 @@ set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
-source "${PLUGIN_ROOT}/hooks-handlers/mnemo-client.sh"
+source "${PLUGIN_ROOT}/hooks-handlers/mmry-client.sh"
 
 # Parse arguments ��� accept both new and legacy formats
 CONTEXT="" WORKING_DIR="" SESSION_ID="" PROJECT_ID="" TASK_ID=""
@@ -45,7 +45,7 @@ if [[ -z "$SESSION_ID" ]]; then
 fi
 
 # Default working directory.
-# Bug #9 (Intervals #29949): /tmp/mnemo-session-dir lookups removed — those
+# Bug #9 (Intervals #29949): /tmp/mmry-session-dir lookups removed — those
 # files collided across concurrent Claude Code sessions. Working directory is
 # now persisted on dbo.Session at SessionStart and resolved by the API when a
 # save request supplies session_id but no working_dir. $PWD remains the
@@ -67,10 +67,10 @@ if [[ -z "$CONTEXT" ]]; then
     exit 1
 fi
 
-if mnemo_process_context "$CONTEXT" "manual" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID" "$VISIBILITY" "$PERMISSION_GROUP_ID"; then
+if mmry_process_context "$CONTEXT" "manual" "$WORKING_DIR" "$SESSION_ID" "$PROJECT_ID" "$TASK_ID" "$VISIBILITY" "$PERMISSION_GROUP_ID"; then
     # Bug #8 (#29950): print the server's short ack when available, otherwise fall back.
-    echo "${MNEMO_PROCESS_MESSAGE:-Memory sent to Mnemo for processing.}"
+    echo "${MMRY_PROCESS_MESSAGE:-Memory sent to MMRY AI for processing.}"
 else
-    _mnemo_format_error "save"
+    _mmry_format_error "save"
     exit 1
 fi

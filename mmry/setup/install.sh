@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# install.sh — Install Mnemo plugin for Claude Code (macOS/Linux)
+# install.sh — Install MMRY AI plugin for Claude Code (macOS/Linux)
 set -euo pipefail
 
 SETTINGS_PATH="${HOME}/.claude/settings.json"
 MARKETPLACE_NAME="internal-plugins"
-PLUGIN_NAME="mnemo@internal-plugins"
+PLUGIN_NAME="mmry@internal-plugins"
 MARKETPLACE_PATH="$(cd "$(dirname "$0")/../.." && pwd)"
 
 # Ensure .claude directory exists
@@ -42,11 +42,11 @@ settings="$(echo "$settings" | jq --arg name "$PLUGIN_NAME" '
     .enabledPlugins[$name] //= true
 ')"
 
-# Disable built-in auto memory (Mnemo replaces it)
+# Disable built-in auto memory (MMRY AI replaces it)
 settings="$(echo "$settings" | jq '.autoMemoryEnabled = false')"
 
 echo "$settings" | jq '.' > "$SETTINGS_PATH"
 
-echo "Mnemo memory plugin installed!"
+echo "MMRY AI memory plugin installed!"
 echo ""
 echo "Restart Claude Code to activate."

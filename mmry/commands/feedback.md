@@ -30,7 +30,7 @@ Submit feedback (bug report or feature request) to the MMRY AI team.
 7. Submit the feedback using the Bash tool:
 
    ```
-   bash "${HOME}/.claude/mnemo/hooks-handlers/submit-feedback.sh" \
+   bash "${HOME}/.claude/mmry/hooks-handlers/submit-feedback.sh" \
      --type "TYPE" \
      --title "TITLE" \
      --description "DESCRIPTION" \

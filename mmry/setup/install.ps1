@@ -1,4 +1,4 @@
-# install.ps1 — Install Mnemo plugin for Claude Code (Windows)
+# install.ps1 — Install MMRY AI plugin for Claude Code (Windows)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -35,7 +35,7 @@ if (Get-Command bash -ErrorAction SilentlyContinue) {
         $bashOk = $true
     } else {
         Write-Host 'ERROR: bash.exe not found.' -ForegroundColor Red
-        Write-Host 'Mnemo requires bash (included with Git for Windows).' -ForegroundColor Red
+        Write-Host 'MMRY AI requires bash (included with Git for Windows).' -ForegroundColor Red
         Write-Host 'Install Git for Windows from https://git-scm.com/download/win'
         Write-Host 'or add the Git bin directory (e.g. C:\Program Files\Git\bin) to your PATH.'
         exit 1
@@ -49,7 +49,7 @@ $marketplaceDir = (Resolve-Path (Join-Path $scriptDir '..\..\')).Path
 
 $settingsPath = Join-Path $env:USERPROFILE '.claude\settings.json'
 $marketplaceName = 'internal-plugins'
-$pluginName = 'mnemo@internal-plugins'
+$pluginName = 'mmry@internal-plugins'
 $marketplacePath = $marketplaceDir -replace '\\', '/'
 
 # Ensure .claude directory exists
@@ -81,7 +81,7 @@ if (-not $settings.enabledPlugins.PSObject.Properties[$pluginName]) {
     $settings.enabledPlugins | Add-Member -NotePropertyName $pluginName -NotePropertyValue $true
 }
 
-# Disable built-in auto memory (Mnemo replaces it)
+# Disable built-in auto memory (MMRY AI replaces it)
 if ($settings.PSObject.Properties['autoMemoryEnabled']) {
     $settings.autoMemoryEnabled = $false
 } else {
@@ -91,6 +91,6 @@ if ($settings.PSObject.Properties['autoMemoryEnabled']) {
 # Write settings back
 $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
 
-Write-Host 'Mnemo memory plugin installed!' -ForegroundColor Green
+Write-Host 'MMRY AI memory plugin installed!' -ForegroundColor Green
 Write-Host ''
 Write-Host 'Restart Claude Code to activate.'
