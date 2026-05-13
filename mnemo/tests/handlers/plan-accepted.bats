@@ -10,7 +10,11 @@ load '../helpers/test-helper'
 
 @test "plan-accepted: includes reason about saving plan" {
     run bash "$PLUGIN_ROOT/hooks-handlers/plan-accepted-check.sh"
-    [[ "$output" == *'PLAN ACCEPTED'* ]]
+    # Reason wording was changed from "PLAN ACCEPTED" to a softer status line
+    # in the thin-client refactor (v1.4 #29732). Assertion now matches the
+    # current production string. Either phrasing should mention saving.
+    [[ "$output" == *'saving accepted plan'* ]] || \
+    [[ "$output" == *'Saving accepted plan'* ]]
 }
 
 @test "plan-accepted: exits with code 2" {
