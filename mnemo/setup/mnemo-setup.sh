@@ -76,19 +76,71 @@ json_escape() {
     printf '%s' "$s"
 }
 
-# Helper: open a URL in the user's default browser
+# Helper: open a URL in the user's default browser.
+#
+# Layered approach (#29765) — tries multiple openers in priority order and stops
+# on first success. Stdout and stderr from each attempt are suppressed so the
+# setup output stays clean on success. The URL is always displayed in a visually
+# distinct block by the caller regardless of whether auto-open succeeded.
 open_browser() {
     local url="$1"
-    case "$(uname -s)" in
-        Darwin*)              open "$url" 2>/dev/null ;;
-        Linux*)               xdg-open "$url" 2>/dev/null ;;
+    local kernel
+    kernel="$(uname -s 2>/dev/null || echo unknown)"
+
+    # WSL detection — /proc/version contains "Microsoft" or "WSL".
+    local is_wsl=0
+    if [[ -r /proc/version ]] && grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null; then
+        is_wsl=1
+    fi
+
+    _try() {
+        # Run a candidate opener with stdout+stderr suppressed; return its exit code.
+        "$@" >/dev/null 2>&1
+    }
+
+    if [[ "$is_wsl" -eq 1 ]]; then
+        # WSL: prefer PowerShell, then wslview, then cmd.exe.
+        _try powershell.exe -NoProfile -Command "Start-Process '$url'" && return 0
+        _try wslview "$url" && return 0
+        _try cmd.exe /c start "" "$url" && return 0
+        return 1
+    fi
+
+    case "$kernel" in
+        Darwin*)
+            _try open "$url" && return 0
+            return 1
+            ;;
+        Linux*)
+            _try xdg-open "$url" && return 0
+            _try gio open "$url" && return 0
+            return 1
+            ;;
         MINGW*|MSYS*|CYGWIN*)
-            cmd.exe /c start "" "$url" 2>/dev/null \
-                || rundll32.exe url.dll,FileProtocolHandler "$url" 2>/dev/null \
-                || true
+            # Git Bash, MSYS2, Cygwin: prefer PowerShell, then explorer, then cmd, then rundll32.
+            _try powershell.exe -NoProfile -Command "Start-Process '$url'" && return 0
+            _try explorer.exe "$url" && return 0
+            _try cmd.exe /c start "" "$url" && return 0
+            _try rundll32.exe url.dll,FileProtocolHandler "$url" && return 0
+            return 1
             ;;
     esac
-    echo "  If your browser didn't open, copy and paste this URL: $url"
+    return 1
+}
+
+# Helper: print the authorization URL in a visually distinct block (#29765).
+# Always called regardless of whether auto-open succeeded so users on hidden
+# terminals or scrolled-past output can still find the URL.
+print_url_block() {
+    local url="$1"
+    echo ""
+    echo "─────────────────────────────────────────────────────────────"
+    echo "  Open this URL in your browser to authorize:"
+    echo ""
+    echo "    $url"
+    echo ""
+    echo "─────────────────────────────────────────────────────────────"
+    echo ""
 }
 
 echo ""
@@ -198,20 +250,33 @@ else
         exit 1
     fi
 
-    # Step 2: Open browser
+    # Step 2: Open browser (#29765 — URL is always shown in a distinct block,
+    # auto-open is best-effort, and the polling loop emits periodic status so
+    # the script never looks hung).
     AUTHORIZE_URL="${VERIFICATION_URL}?code=${DEVICE_CODE}"
+    print_url_block "$AUTHORIZE_URL"
+    if open_browser "$AUTHORIZE_URL"; then
+        echo "Your browser should open shortly. If it does not, paste the URL above."
+    else
+        echo "Could not auto-open your browser. Paste the URL above to continue."
+    fi
     echo ""
-    echo "Opening your browser to authorize this device..."
-    echo "  ${AUTHORIZE_URL}"
-    echo ""
-    open_browser "$AUTHORIZE_URL"
     echo "Waiting for authorization (expires in $((EXPIRES_IN / 60)) minutes)..."
 
     # Step 3: Poll for authorization
     ELAPSED=0
+    NEXT_STATUS_AT=30   # emit a 'still waiting' line every 30 elapsed seconds
     while (( ELAPSED < EXPIRES_IN )); do
         sleep "$POLL_INTERVAL"
         ELAPSED=$(( ELAPSED + POLL_INTERVAL ))
+
+        # #29765 — periodic status so the script never appears hung.
+        if (( ELAPSED >= NEXT_STATUS_AT )); then
+            mins=$(( ELAPSED / 60 ))
+            secs=$(( ELAPSED % 60 ))
+            echo "  Still waiting for authorization... (${mins}m ${secs}s elapsed)"
+            NEXT_STATUS_AT=$(( ELAPSED + 30 ))
+        fi
 
         STATUS_TMP="$(mktemp)"
         STATUS_CODE=$(curl -s -o "$STATUS_TMP" -w '%{http_code}' \
